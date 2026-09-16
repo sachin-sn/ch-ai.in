@@ -1,0 +1,9 @@
+node_modules/
+cdktf.out/
+dist/
+*.d.ts
+*.js
+!jest.config.js
+.terraform/
+terraform.tfstate*
+.gen/
