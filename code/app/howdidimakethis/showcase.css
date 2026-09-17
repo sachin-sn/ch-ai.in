@@ -1,0 +1,380 @@
+/*
+  "peek under the hood" (/howdidimakethis/*) — a deliberately separate
+  visual identity from the four portfolio themes: dark terminal/notebook
+  aesthetic, one monospace family throughout, terminal-green accent. This
+  file is only ever loaded by app/howdidimakethis/layout.tsx (its own
+  root layout, with no Nav/Footer/ThemeProvider from the main site — see
+  that file's comment for why), so none of these class names need to be
+  scoped against the site's [data-theme="..."] selectors.
+*/
+
+:root {
+  --sc-bg: #070a09;
+  --sc-bg-panel: #0e1512;
+  --sc-bg-panel-raised: #121c18;
+  --sc-line: rgba(93, 227, 154, 0.22);
+  --sc-line-bright: rgba(93, 227, 154, 0.45);
+  --sc-ink: #d9f3e6;
+  --sc-ink-dim: #7fa895;
+  --sc-accent: #3ddc84;
+  --sc-accent-bright: #7dffbb;
+  --sc-warn: #ffb84d;
+  --sc-font-mono: var(--sc-font-plex-mono), "SFMono-Regular", Consolas, monospace;
+}
+
+.sc-body {
+  margin: 0;
+  background: var(--sc-bg);
+  color: var(--sc-ink);
+  font-family: var(--sc-font-mono);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Faint scanline texture across the whole page -- purely decorative,
+   kept very low-opacity so body text stays perfectly readable. */
+.sc-scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(93, 227, 154, 0.035) 0px,
+    rgba(93, 227, 154, 0.035) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+.sc-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px 96px;
+}
+
+/* ---------------- top bar ---------------- */
+.sc-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 0 28px;
+  border-bottom: 1px solid var(--sc-line);
+  margin-bottom: 40px;
+  font-size: 0.85rem;
+}
+.sc-topbar a {
+  color: var(--sc-ink-dim);
+  text-decoration: none;
+}
+.sc-topbar a:hover {
+  color: var(--sc-accent-bright);
+}
+.sc-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.sc-topbar-path {
+  color: var(--sc-accent);
+}
+
+/* ---------------- boot hero ---------------- */
+.sc-hero {
+  margin-bottom: 56px;
+}
+.sc-boot-line {
+  color: var(--sc-ink-dim);
+  font-size: 0.85rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  opacity: 0;
+  animation: sc-boot-in 0.4s ease forwards;
+}
+.sc-boot-line:nth-child(1) { animation-delay: 0.1s; }
+.sc-boot-line:nth-child(2) { animation-delay: 0.38s; }
+.sc-boot-line:nth-child(3) { animation-delay: 0.66s; }
+.sc-boot-line .sc-ok {
+  color: var(--sc-accent);
+}
+.sc-hero-title {
+  margin: 18px 0 10px;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--sc-ink);
+  letter-spacing: -0.01em;
+  opacity: 0;
+  animation: sc-boot-in 0.5s ease forwards;
+  animation-delay: 0.95s;
+}
+.sc-hero-title .sc-cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  background: var(--sc-accent);
+  margin-left: 4px;
+  vertical-align: -0.12em;
+  animation: sc-blink 1s steps(1) infinite;
+}
+.sc-hero-sub {
+  color: var(--sc-ink-dim);
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 58ch;
+  opacity: 0;
+  animation: sc-boot-in 0.5s ease forwards;
+  animation-delay: 1.2s;
+}
+
+@keyframes sc-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes sc-boot-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------------- sections ---------------- */
+.sc-section {
+  margin-bottom: 52px;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.sc-section.sc-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.sc-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 18px;
+  font-size: 0.8rem;
+  color: var(--sc-ink-dim);
+}
+.sc-section-head .sc-prompt {
+  color: var(--sc-accent);
+}
+.sc-section-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--sc-ink);
+  font-weight: 700;
+  text-transform: lowercase;
+}
+.sc-section p {
+  color: var(--sc-ink-dim);
+  line-height: 1.7;
+  font-size: 0.92rem;
+  max-width: 66ch;
+}
+.sc-section p + p {
+  margin-top: 12px;
+}
+.sc-section strong {
+  color: var(--sc-ink);
+  font-weight: 600;
+}
+.sc-section code {
+  background: var(--sc-bg-panel-raised);
+  border: 1px solid var(--sc-line);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.85em;
+  color: var(--sc-accent-bright);
+}
+
+/* ---------------- stack chips ---------------- */
+.sc-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.sc-chip {
+  border: 1px solid var(--sc-line);
+  background: var(--sc-bg-panel);
+  color: var(--sc-ink);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+/* ---------------- diagram ---------------- */
+.sc-diagram {
+  border: 1px solid var(--sc-line);
+  background: var(--sc-bg-panel);
+  border-radius: 8px;
+  padding: 18px;
+  margin-top: 16px;
+  overflow-x: auto;
+}
+.sc-diagram svg {
+  display: block;
+  min-width: 560px;
+  width: 100%;
+  height: auto;
+}
+.sc-diagram-caption {
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: var(--sc-ink-dim);
+}
+
+/* ---------------- field notes ---------------- */
+.sc-note {
+  border-left: 2px solid var(--sc-line);
+  padding: 4px 0 4px 16px;
+  margin-bottom: 20px;
+}
+.sc-note:last-child {
+  margin-bottom: 0;
+}
+.sc-note-title {
+  color: var(--sc-ink);
+  font-weight: 700;
+  font-size: 0.88rem;
+  margin-bottom: 6px;
+}
+.sc-note-title::before {
+  content: "// ";
+  color: var(--sc-accent);
+}
+
+/* ---------------- timeline ---------------- */
+.sc-timeline {
+  margin-top: 16px;
+  border-left: 1px solid var(--sc-line);
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.sc-timeline-item {
+  position: relative;
+  font-size: 0.88rem;
+  color: var(--sc-ink-dim);
+  line-height: 1.6;
+}
+.sc-timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -25px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sc-accent);
+}
+.sc-timeline-item strong {
+  color: var(--sc-ink);
+}
+
+/* ---------------- footer / index ---------------- */
+.sc-footer {
+  border-top: 1px solid var(--sc-line);
+  padding-top: 24px;
+  margin-top: 60px;
+  font-size: 0.8rem;
+  color: var(--sc-ink-dim);
+}
+.sc-footer a {
+  color: var(--sc-accent);
+  text-decoration: none;
+}
+.sc-footer a:hover {
+  color: var(--sc-accent-bright);
+}
+
+.sc-index-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+}
+.sc-index-card {
+  display: block;
+  border: 1px solid var(--sc-line);
+  background: var(--sc-bg-panel);
+  border-radius: 8px;
+  padding: 18px 20px;
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.sc-index-card:hover {
+  border-color: var(--sc-line-bright);
+  transform: translateX(2px);
+}
+.sc-index-card[data-status="coming-soon"] {
+  cursor: default;
+  opacity: 0.6;
+}
+.sc-index-card[data-status="coming-soon"]:hover {
+  transform: none;
+  border-color: var(--sc-line);
+}
+.sc-index-card-name {
+  color: var(--sc-ink);
+  font-weight: 700;
+  font-size: 0.98rem;
+}
+.sc-index-card-tagline {
+  color: var(--sc-ink-dim);
+  font-size: 0.82rem;
+  margin-top: 4px;
+}
+.sc-index-card-status {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sc-accent);
+}
+.sc-index-card[data-status="coming-soon"] .sc-index-card-status {
+  color: var(--sc-warn);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-hero-title .sc-cursor {
+    animation: none;
+    opacity: 1;
+  }
+  .sc-section {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .sc-boot-line,
+  .sc-hero-title,
+  .sc-hero-sub {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .sc-shell {
+    padding: 0 18px 72px;
+  }
+  .sc-diagram svg {
+    min-width: 480px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sc-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .sc-topbar-right {
+    flex-wrap: wrap;
+  }
+}

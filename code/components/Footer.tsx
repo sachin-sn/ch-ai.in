@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Footer() {
   const year = new Date().getFullYear();
   return (
@@ -27,6 +29,18 @@ export default function Footer() {
             linkedin
           </a>
         </div>
+      </div>
+
+      {/* The easter egg: deliberately understated (small, dim, centered on
+          its own line) rather than styled like the links above -- it's
+          meant to be stumbled on, not advertised. The glitch is CSS-only
+          (.footer-egg-link in globals.css), so the payoff on click is the
+          destination page's own boot-sequence entrance, not a delayed
+          navigation here. */}
+      <div className="flex justify-center pb-6">
+        <Link href="/howdidimakethis/ch-ai" className="footer-egg-link">
+          peek under the hood
+        </Link>
       </div>
     </footer>
   );
