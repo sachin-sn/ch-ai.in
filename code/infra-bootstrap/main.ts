@@ -12,9 +12,20 @@ import { IamRole } from "@cdktf/provider-aws/lib/iam-role";
 import { IamRolePolicy } from "@cdktf/provider-aws/lib/iam-role-policy";
 import { DataAwsIamPolicyDocument } from "@cdktf/provider-aws/lib/data-aws-iam-policy-document";
 
-// Update this if the repo is ever renamed or transferred — the trust policy
-// below only lets tokens minted for *this* repo assume the deploy role.
-const GITHUB_REPO = "sachin-sn/ch-ai.in";
+// GitHub repos created after July 15, 2026 get an "immutable subject
+// format" OIDC token by default: the owner and repo NAMES are suffixed
+// with their permanent numeric IDs (repo:OWNER@OWNER_ID/REPO@REPO_ID:...)
+// instead of the plain repo:OWNER/REPO:... form most existing docs and
+// examples still show. This is deliberate on GitHub's part — it stops
+// someone from renaming/recreating a repo to match an old trust condition
+// and hijack a role. Confirmed from an actual CloudTrail
+// AssumeRoleWithWebIdentity record for this repo (2026-09-17): the sub
+// claim GitHub actually sends is
+// "repo:sachin-sn@50323030/ch-ai.in@1372767592:...". If this repo is ever
+// transferred to a different owner, only the owner ID changes (the repo
+// keeps its ID), and the "sachin-sn" name portion would also need
+// updating to match the new owner's login.
+const GITHUB_REPO = "sachin-sn@50323030/ch-ai.in@1372767592";
 
 // Must match the AwsProvider region in code/infra/main.ts — the state
 // bucket and lock table live alongside everything else this deploys.
@@ -141,6 +152,16 @@ class BootstrapStack extends TerraformStack {
               values: [
                 `repo:${GITHUB_REPO}:ref:refs/heads/main`,
                 `repo:${GITHUB_REPO}:pull_request`,
+                // Jobs that reference a GitHub Environment (like infra.yml's
+                // `deploy` job, gated behind the `production` environment for
+                // manual approval) get a DIFFERENT sub claim shape than a
+                // plain branch push — GitHub swaps in
+                // "repo:<repo-part>:environment:NAME" instead of the
+                // ref-based one, regardless of which branch triggered it.
+                // Without this line, that job's token matches neither of
+                // the two conditions above and AWS denies the assume-role
+                // call with a generic "not authorized" error.
+                `repo:${GITHUB_REPO}:environment:production`,
               ],
             },
           ],
@@ -152,9 +173,7 @@ class BootstrapStack extends TerraformStack {
       name: "ch-ai-in-github-actions-deploy",
       assumeRolePolicy: trustPolicy.json,
       description:
-        "Assumed by GitHub Actions (OIDC) in " +
-        GITHUB_REPO +
-        " to deploy the ch-ai.in site and infra.",
+        "Assumed by GitHub Actions (OIDC) in sachin-sn/ch-ai.in to deploy the ch-ai.in site and infra.",
     });
 
     // Least-privilege-ish permissions: scoped to the specific state
@@ -191,8 +210,34 @@ class BootstrapStack extends TerraformStack {
             "s3:PutBucketPublicAccessBlock",
             "s3:CreateBucket",
             "s3:PutEncryptionConfiguration",
+            "s3:GetEncryptionConfiguration",
             "s3:PutLifecycleConfiguration",
             "s3:GetLifecycleConfiguration",
+            // The rest below are all read-only "Get*" calls the AWS
+            // provider makes unconditionally while refreshing an
+            // aws_s3_bucket resource, to detect drift on settings this
+            // stack never actually configures (ACL, CORS, website hosting,
+            // versioning, logging, tags, replication, object lock,
+            // request payment, transfer acceleration). None of them widen
+            // what this role can change — they're the same lesson as the
+            // DynamoDB DescribeContinuousBackups/DescribeTimeToLive gap:
+            // Terraform reads back far more than a resource's own config
+            // block sets, so a "least privilege" policy has to cover the
+            // provider's reads, not just the fields you actually set.
+            "s3:GetBucketAcl",
+            "s3:GetBucketCors",
+            "s3:GetBucketWebsite",
+            "s3:GetBucketVersioning",
+            "s3:GetBucketLogging",
+            "s3:GetBucketTagging",
+            "s3:GetReplicationConfiguration",
+            "s3:GetBucketObjectLockConfiguration",
+            "s3:GetBucketRequestPayment",
+            "s3:GetAccelerateConfiguration",
+            // Same story, one level down: aws_s3_object's refresh reads
+            // per-object tagging and ACL unconditionally too.
+            "s3:GetObjectTagging",
+            "s3:GetObjectAcl",
           ],
           resources: [
             `arn:aws:s3:::${SITE_BUCKET_NAME}`,

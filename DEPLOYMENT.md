@@ -145,3 +145,50 @@ PutItem, GetItem, DeleteItem, UpdateItem
 Terraform reads back point-in-time-recovery and TTL settings on every
 refresh even when your table config doesn't set them, so both Describe
 permissions are needed even for a table with no special settings.
+
+### OIDC role assumption fails with "Not authorized to perform sts:AssumeRoleWithWebIdentity" despite a correct-looking trust policy
+
+Check the actual token GitHub is sending before assuming the trust policy
+is wrong. GitHub repos created after **July 15, 2026** get an "immutable
+subject format" OIDC token by default: the owner and repo *names* are
+suffixed with their permanent numeric IDs —
+
+```
+repo:OWNER@OWNER_ID/REPO@REPO_ID:ref:refs/heads/main
+```
+
+— instead of the plain `repo:OWNER/REPO:ref:refs/heads/main` form still
+shown in most AWS/GitHub OIDC examples and docs (including earlier
+versions of this file). GitHub did this deliberately: it stops someone
+from renaming or recreating a repo/org to match an old trust condition and
+hijack a role that trusted the name alone.
+
+For this repo, the real value (confirmed via CloudTrail) is:
+
+```
+repo:sachin-sn@50323030/ch-ai.in@1372767592:...
+```
+
+`code/infra-bootstrap/main.ts`'s `GITHUB_REPO` constant already uses this
+form. If this ever breaks again after a change to the repo (rename,
+ownership transfer), don't guess the new value — pull the real one from
+CloudTrail:
+
+1. AWS Console → CloudTrail → Event history (make sure the region
+   selector matches where your role lives, e.g. `ap-south-1` — Event
+   History can behave inconsistently for global-service events like STS
+   outside the region you're viewing).
+2. Filter by Resource name = `ch-ai-in-github-actions-deploy` (more
+   reliable than filtering by event name).
+3. Open the most recent `AssumeRoleWithWebIdentity` record and read the
+   exact `sub` value out of `userIdentity.principalId` or `.userName`.
+4. Update `GITHUB_REPO` in `code/infra-bootstrap/main.ts` to match, then
+   `npm run deploy` from `infra-bootstrap` — this only updates the IAM
+   role's trust policy in place, nothing else gets touched.
+
+Two things that look like clues but aren't, if you go looking: the role's
+"Last activity" in the IAM console only reflects usage *after* a
+successful assumption, so it stays blank no matter how many failed
+assume-role attempts happen — it's not evidence either way. And CloudTrail
+Event History's region scoping can make correctly-logged events seem
+missing if you're viewing the wrong region.

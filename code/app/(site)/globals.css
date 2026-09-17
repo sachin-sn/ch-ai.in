@@ -250,6 +250,48 @@ body {
   transform: translateX(0);
 }
 
+/* Footer easter egg link (see components/Footer.tsx) -- deliberately
+   understated at rest (small, dim), with a brief RGB-split glitch flicker
+   on hover/focus as the only hint that it's worth clicking. The blanket
+   prefers-reduced-motion rule above (animation-duration: 0.01ms) already
+   neutralizes this animation, so no separate override is needed here. */
+.footer-egg-link {
+  display: inline-block;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-dim);
+  opacity: 0.55;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+.footer-egg-link:hover,
+.footer-egg-link:focus-visible {
+  opacity: 1;
+  animation: egg-glitch 0.5s steps(2, end) infinite;
+}
+@keyframes egg-glitch {
+  0%, 100% {
+    text-shadow: none;
+    transform: translate(0, 0);
+  }
+  20% {
+    text-shadow: -1px 0 var(--color-accent-bright), 1px 0 var(--color-highlight);
+    transform: translate(-1px, 0);
+  }
+  40% {
+    text-shadow: 1px 0 var(--color-accent-bright), -1px 0 var(--color-highlight);
+    transform: translate(1px, 0);
+  }
+  60% {
+    text-shadow: -1px 0 var(--color-highlight), 1px 0 var(--color-accent-bright);
+    transform: translate(0, 1px);
+  }
+  80% {
+    text-shadow: none;
+    transform: translate(0, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
