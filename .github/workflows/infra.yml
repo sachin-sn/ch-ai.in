@@ -1,0 +1,100 @@
+name: Infra (CDKTF)
+
+# Deploys code/infra — the Route53 zone, ACM cert, S3 bucket and CloudFront
+# distribution ch-ai.in runs on. A pull request only ever gets a read-only
+# `cdktf diff`; an actual `cdktf deploy` only happens on push to main, and
+# even then it pauses for manual approval via the `production` environment
+# below, because this stack can touch DNS and the CDN in front of a live
+# domain.
+#
+# One-time setup this workflow depends on — see code/infra-bootstrap/README.md:
+#   - AWS_DEPLOY_ROLE_ARN, AWS_REGION, TF_STATE_BUCKET, TF_STATE_LOCK_TABLE
+#     repo variables (Settings > Secrets and variables > Actions > Variables)
+#   - a `production` GitHub Environment with a required reviewer
+#   - code/infra/main.ts pointed at the real state bucket/table names
+#     (S3Backend currently has REPLACE_WITH_* placeholders)
+
+on:
+  pull_request:
+    paths:
+      - "code/infra/**"
+      - ".github/workflows/infra.yml"
+  push:
+    branches: [main]
+    paths:
+      - "code/infra/**"
+      - ".github/workflows/infra.yml"
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write # required to assume the AWS role via OIDC
+  contents: read
+  pull-requests: write # lets the plan job comment the diff on the PR
+
+defaults:
+  run:
+    working-directory: code/infra
+
+concurrency:
+  group: infra-${{ github.workflow }}
+  cancel-in-progress: false # never cancel a deploy mid-apply
+
+jobs:
+  plan:
+    if: github.event_name == 'pull_request'
+    name: cdktf diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: code/infra/package-lock.json
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.16.3"
+          terraform_wrapper: false
+
+      - run: npm ci
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: cdktf diff
+        run: npx cdktf diff ch-ai-portfolio
+
+  deploy:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    name: cdktf deploy
+    runs-on: ubuntu-latest
+    environment: production # requires manual approval — see repo Settings > Environments
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: code/infra/package-lock.json
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.16.3"
+          terraform_wrapper: false
+
+      - run: npm ci
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: cdktf deploy
+        run: npx cdktf deploy ch-ai-portfolio --auto-approve

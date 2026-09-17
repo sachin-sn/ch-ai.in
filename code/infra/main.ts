@@ -1,4 +1,4 @@
-import { App, TerraformStack, TerraformOutput } from "cdktf";
+import { App, TerraformStack, TerraformOutput, S3Backend } from "cdktf";
 import { Construct } from "constructs";
 import { AwsProvider } from "@cdktf/provider-aws/lib/provider";
 import { StaticSite } from "./static-site";
@@ -8,6 +8,23 @@ const DOMAIN_NAME = "ch-ai.in";
 class PortfolioStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
     super(scope, id);
+
+    // Remote state — shared between your laptop and GitHub Actions so
+    // neither one applies changes the other can't see. Created once by
+    // ../infra-bootstrap; the bucket/table names below come straight from
+    // that stack's outputs (state_bucket_name / state_lock_table_name).
+    //
+    // The FIRST time this runs after adding the backend, Terraform will
+    // notice the backend changed and ask to migrate your existing local
+    // state into this bucket — say yes. After that, this stack has no
+    // local .tfstate at all; everything lives in S3.
+    new S3Backend(this, {
+      bucket: "ch-ai-in-tfstate-630898426885",
+      key: "ch-ai-portfolio/terraform.tfstate",
+      region: "ap-south-1",
+      dynamodbTable: "ch-ai-in-tfstate-lock",
+      encrypt: true,
+    });
 
     // Primary provider — everything except the ACM certificate deploys here.
     // Swap the region for whichever is closest to you or your audience;

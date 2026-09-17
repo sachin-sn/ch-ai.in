@@ -1,0 +1,593 @@
+/*
+  Magazine theme — "Tech Journal" direction.
+  Deep indigo ground, a violet accent pulled from the cover portrait's
+  jacket/shadow tones, and a turquoise highlight pulled from the portrait's
+  background wash. Bold sans display type, a serif masthead treatment for
+  the cover name, mono for functional/kicker labels.
+
+  This file owns two things: (1) the semantic token overrides for
+  [data-theme="magazine"] that the shared chrome (Nav, Footer,
+  ThemeSwitcher) picks up automatically, and (2) the mag-* structural
+  classes used only by themes/magazine/MagazineHome.tsx. Keeping both in
+  one file is what makes this folder liftable into a standalone template
+  repo later.
+*/
+
+[data-theme="magazine"] {
+  --color-surface: #171328;
+  --color-surface-panel: #211c36;
+  --color-surface-soft: #2b2447;
+  --color-surface-line: #4a4468;
+  --color-ink: #eee9f5;
+  --color-ink-dim: #a89fc2;
+  --color-accent: #5b446d;
+  --color-accent-bright: #8a63ab;
+  --color-accent-deep: #3a2a4d;
+  --color-highlight: #5fc9be;
+
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
+  --font-masthead: var(--font-fraunces), serif;
+
+  /* Fixed (non-mode-swapping) accent used only by the cover treatment's
+     masthead name/rule, which sit directly on the cover photo's own dark
+     scrim regardless of site mode -- unlike --color-highlight below (which
+     darkens in light mode to stay legible as ordinary text on a now-light
+     page background), this needs to stay a bright, vivid teal always. */
+  --mag-cover-glow: #5fc9be;
+}
+
+/* Light mode: the same violet/teal identity, surfaces and ink inverted to
+   a bright cream/lavender ground with deep-indigo ink. --color-accent
+   stays close to its dark-mode value (it's used as a background behind
+   fixed white text in both modes -- see .mag-cover-eyebrow -- so it needs
+   to stay dark/saturated enough for that regardless of mode); the token
+   that actually needs to invert lightness is --color-highlight, since it
+   doubles as small text (kickers, bylines) that must read against a
+   light page background instead of a dark one. */
+[data-theme="magazine"][data-mode="light"] {
+  --color-surface: #f8f5fc;
+  --color-surface-panel: #ffffff;
+  --color-surface-soft: #efe7f8;
+  --color-surface-line: #ddd0ea;
+  --color-ink: #221a30;
+  --color-ink-dim: #6e6180;
+  --color-accent: #5b446d;
+  --color-accent-bright: #7c56a0;
+  --color-accent-deep: #2e2240;
+  --color-highlight: #1f8f83;
+}
+
+[data-theme="magazine"] body {
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Nav gets a sticky translucent treatment in this theme. */
+[data-theme="magazine"] .site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+/* ---------------- Cover ---------------- */
+.mag-cover-outer {
+  padding: 28px 20px 0;
+}
+.mag-cover-frame {
+  position: relative;
+  max-width: 1180px;
+  margin: 0 auto;
+  background: linear-gradient(160deg, var(--color-surface-panel) 0%, var(--color-surface) 65%);
+  border: 8px solid var(--color-accent);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.mag-streaks {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.mag-streak {
+  position: absolute;
+  width: 3px;
+  height: 260px;
+  background: linear-gradient(180deg, transparent, var(--color-accent-bright) 45%, transparent);
+  opacity: 0.55;
+  border-radius: 4px;
+  transform: rotate(18deg);
+}
+.mag-streak.mag-streak-highlight {
+  background: linear-gradient(180deg, transparent, var(--color-highlight) 45%, transparent);
+  opacity: 0.4;
+}
+
+.mag-cover-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  align-items: stretch;
+  min-height: 560px;
+}
+
+.mag-cover-photo-col {
+  position: relative;
+  overflow: hidden;
+  background: #f3ece0;
+}
+.mag-cover-photo-col img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+  will-change: transform;
+}
+.mag-duotone-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(200deg, var(--color-highlight) 0%, var(--color-accent-bright) 55%, var(--color-surface-panel) 130%);
+  mix-blend-mode: soft-light;
+  opacity: 0.55;
+}
+.mag-duotone-overlay2 {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, var(--color-surface) 0%, transparent 42%);
+}
+.mag-masthead-scrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 85% 60% at 8% 6%, rgba(10, 7, 20, 0.72) 0%, rgba(10, 7, 20, 0.38) 40%, transparent 72%);
+}
+.mag-cover-photo-col::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 72%, var(--color-surface-panel) 100%);
+}
+
+.mag-cover-masthead {
+  position: absolute;
+  top: 30px;
+  left: 32px;
+  right: 32px;
+  z-index: 3;
+  pointer-events: none;
+}
+.mag-cover-masthead .mag-name {
+  font-family: var(--font-masthead);
+  font-weight: 900;
+  font-style: normal;
+  font-optical-sizing: auto;
+  font-size: clamp(1.7rem, 3.1vw, 2.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.01em;
+  color: #fff;
+  text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.55);
+  margin: 0;
+}
+.mag-cover-masthead .mag-name em {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--mag-cover-glow);
+}
+.mag-cover-masthead .mag-rule {
+  width: 64px;
+  height: 3px;
+  margin-top: 10px;
+  background: var(--mag-cover-glow);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.mag-cover-text-col {
+  padding: 148px 44px 40px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.mag-cover-eyebrow {
+  display: inline-block;
+  align-self: flex-start;
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  border-radius: 999px;
+  margin-bottom: 20px;
+}
+h1.mag-cover-headline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 5.2vw, 3.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  margin: 0 0 22px;
+}
+.mag-cover-headline .mag-accent {
+  color: var(--color-highlight);
+}
+.mag-cover-teasers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mag-cover-teasers li {
+  border-top: 1px solid var(--color-surface-line);
+  padding-top: 12px;
+}
+.mag-cover-teasers a {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  text-decoration: none;
+  pointer-events: auto;
+}
+.mag-cover-teasers .mag-t-label {
+  font-weight: 600;
+  font-size: 0.98rem;
+  color: var(--color-ink);
+}
+.mag-cover-teasers .mag-t-tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--color-ink-dim);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.mag-cover-teasers a:hover .mag-t-label {
+  color: var(--color-accent-bright);
+}
+
+.mag-edition-line {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+  padding: 16px 28px;
+  border-top: 1px solid var(--color-surface-line);
+}
+.mag-edition-line b {
+  color: var(--color-highlight);
+}
+
+/* ---------------- Standfirst ---------------- */
+.mag-standfirst {
+  padding: 64px 0 8px;
+}
+.mag-standfirst-inner {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 40px;
+}
+.mag-standfirst-label {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-bright);
+}
+.mag-standfirst p {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.55rem;
+  line-height: 1.45;
+  margin: 0;
+  color: var(--color-ink);
+}
+.mag-standfirst p .mag-hl {
+  color: var(--color-highlight);
+}
+
+/* ---------------- Callout ---------------- */
+.mag-callout {
+  margin: 44px 0 60px;
+  background: linear-gradient(120deg, var(--color-accent-deep), var(--color-accent));
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 24px 30px;
+}
+.mag-callout .mag-stamp {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #fff;
+  color: var(--color-accent-deep);
+  padding: 8px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.mag-callout p {
+  margin: 0;
+  font-size: 0.98rem;
+  color: rgba(255, 255, 255, 0.92);
+}
+.mag-callout a.mag-email {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-decoration: none;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}
+.mag-callout a.mag-email:hover {
+  border-color: var(--color-highlight);
+  color: var(--color-highlight);
+}
+
+/* ---------------- Section headers ---------------- */
+.mag-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.mag-section-head .mag-num {
+  font-family: var(--font-mono);
+  color: var(--color-surface);
+  background: var(--color-highlight);
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-weight: 600;
+}
+.mag-section-head h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2rem;
+  margin: 0;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+}
+.mag-section-head .mag-rule-flex {
+  flex: 1;
+  height: 1px;
+  background: var(--color-surface-line);
+}
+
+.mag-block {
+  padding: 12px 0 64px;
+}
+
+/* ---------------- Stories ---------------- */
+.mag-stories {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.mag-story {
+  background: var(--color-surface-soft);
+  border-radius: 14px;
+  padding: 26px;
+  border-top: 3px solid var(--color-accent-bright);
+}
+.mag-story .mag-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-highlight);
+}
+.mag-story h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin: 12px 0 12px;
+  color: var(--color-ink);
+}
+.mag-story p {
+  color: var(--color-ink-dim);
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+.mag-story .mag-read {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  color: var(--color-highlight);
+}
+.mag-story .mag-read:hover {
+  color: var(--color-accent-bright);
+}
+
+/* ---------------- Career TOC ---------------- */
+.mag-toc-row {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  gap: 20px;
+  align-items: start;
+  padding: 24px 0;
+  border-top: 1px solid var(--color-surface-line);
+}
+.mag-toc-row:last-child {
+  border-bottom: 1px solid var(--color-surface-line);
+}
+.mag-toc-year {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--color-accent-bright);
+  line-height: 1.1;
+}
+.mag-toc-year small {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.65rem;
+  color: var(--color-ink-dim);
+  margin-top: 4px;
+}
+.mag-toc-role h4 {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--color-ink);
+}
+.mag-toc-role .mag-company {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--color-highlight);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+  display: block;
+}
+.mag-toc-role ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-ink-dim);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.mag-toc-row .mag-page {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--color-ink-dim);
+  padding-top: 4px;
+}
+
+/* ---------------- Off the clock + specs ---------------- */
+.mag-split {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 32px;
+}
+.mag-offclock-item {
+  margin-bottom: 22px;
+  padding-left: 16px;
+  border-left: 2px solid var(--color-accent);
+}
+.mag-offclock-item h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.12rem;
+  margin: 0 0 6px;
+  color: var(--color-ink);
+}
+.mag-offclock-item p {
+  margin: 0;
+  color: var(--color-ink-dim);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.mag-specs {
+  background: var(--color-surface-soft);
+  border-radius: 14px;
+  padding: 26px;
+}
+.mag-specs .mag-specs-title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-highlight);
+  margin-bottom: 18px;
+  display: block;
+}
+.mag-specs dl {
+  margin: 0;
+}
+.mag-specs .mag-grp {
+  margin-bottom: 16px;
+}
+.mag-specs .mag-grp:last-child {
+  margin-bottom: 0;
+}
+.mag-specs dt {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+.mag-specs dd {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--color-ink);
+}
+
+@media (max-width: 900px) {
+  /* Decorative light streaks across the cover -- positioned in percentages
+     of .mag-cover-frame's box, which is a wide landscape shape on desktop
+     but a tall stacked one once .mag-cover-grid collapses to one column
+     below. The same coordinates then land the streaks across the
+     headline/text column instead of just the photo, reading as a
+     misaligned diagonal line through the copy. They're purely decorative
+     (aria-hidden), so simplest fix is to drop them once the cover stacks. */
+  .mag-streaks {
+    display: none;
+  }
+  .mag-callout {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    text-align: left;
+  }
+  .mag-callout a.mag-email {
+    white-space: normal;
+    word-break: break-word;
+  }
+  .mag-cover-grid {
+    grid-template-columns: 1fr;
+  }
+  .mag-cover-photo-col {
+    height: 320px;
+  }
+  .mag-cover-text-col {
+    padding: 32px 24px 32px;
+  }
+  .mag-cover-masthead {
+    top: 18px;
+    left: 20px;
+    right: 20px;
+  }
+  .mag-cover-masthead .mag-name {
+    font-size: 1.5rem;
+  }
+  .mag-standfirst-inner {
+    grid-template-columns: 1fr;
+  }
+  .mag-stories {
+    grid-template-columns: 1fr;
+  }
+  .mag-split {
+    grid-template-columns: 1fr;
+  }
+  .mag-toc-row {
+    grid-template-columns: 60px 1fr;
+  }
+  .mag-toc-row .mag-page {
+    display: none;
+  }
+}

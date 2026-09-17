@@ -1,0 +1,266 @@
+@import "tailwindcss";
+
+/*
+  Theme engine — semantic tokens.
+
+  Every theme (magazine, and later pixel/material/monochrome) sets these
+  same custom properties under [data-theme="<id>"]. Shared components
+  (Nav, Footer, ThemeSwitcher, case-study pages) only ever reference the
+  semantic names below via Tailwind's @theme inline mapping, so they
+  reskin automatically when the active theme changes — no per-theme
+  component variants needed for the shared chrome.
+
+  The :root block below is the fallback/default: the original "Ink &
+  Brass" palette this site launched with. It stays live today as the
+  fallback for anything outside the magazine homepage, and is the seed
+  for a future formal "monochrome" theme (see the project plan).
+*/
+:root {
+  --color-surface: #12100e;
+  --color-surface-panel: #1c1916;
+  --color-surface-soft: #1c1916;
+  --color-surface-line: color-mix(in srgb, #ede6d8 18%, transparent);
+  --color-ink: #ede6d8;
+  --color-ink-dim: #a89e8c;
+  --color-accent: #b8863b;
+  --color-accent-bright: #d4a256;
+  --color-accent-deep: #8c6226;
+  --color-highlight: #2d5642;
+
+  --font-display: var(--font-newsreader), Georgia, serif;
+  --font-body: var(--font-newsreader), Georgia, serif;
+  --font-mono: var(--font-plex-mono), monospace;
+}
+
+@theme inline {
+  --color-surface: var(--color-surface);
+  --color-surface-panel: var(--color-surface-panel);
+  --color-surface-soft: var(--color-surface-soft);
+  --color-surface-line: var(--color-surface-line);
+  --color-ink: var(--color-ink);
+  --color-ink-dim: var(--color-ink-dim);
+  --color-accent: var(--color-accent);
+  --color-accent-bright: var(--color-accent-bright);
+  --color-accent-deep: var(--color-accent-deep);
+  --color-highlight: var(--color-highlight);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+html {
+  background: var(--color-surface);
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  /* .reveal-left/-right sections translate in from off-screen, and a few
+     theme elements can run slightly wide on very narrow phones -- clip
+     that horizontal overshoot so it never opens a side scrollbar.
+     Deliberately `clip`, not `hidden`: `overflow-x: hidden` forces
+     `overflow-y` to a scrolling value too (per spec), which turns body
+     into its own scroll container and breaks `position: sticky` on the
+     nav (it sticks to body's box instead of the viewport, and on mobile
+     that reads as the nav scrolling away instead of staying pinned).
+     `overflow-x: clip` suppresses the same horizontal overflow without
+     creating a new scroll container, so sticky keeps working. */
+  overflow-x: clip;
+}
+
+/* Ledger-line divider: used by the default/fallback chrome. */
+.ledger-rule {
+  border-top: 1px solid var(--color-surface-line);
+}
+
+/* Visible keyboard focus, kept in the active theme's accent. */
+:focus-visible {
+  outline: 2px solid var(--color-accent-bright);
+  outline-offset: 2px;
+}
+
+/* Shared light/dark mode toggle button (rendered by components/ModeToggle
+   next to the theme switcher), themed via the semantic tokens so it looks
+   native inside whichever theme is active. Only themes that define
+   [data-theme="<id>"][data-mode="dark"] overrides actually change when
+   this is clicked -- ModeToggle itself decides which themes show it. */
+.mode-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--color-surface-line);
+  background: var(--color-surface-soft);
+  color: var(--color-accent-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.mode-toggle:hover {
+  background: var(--color-surface-line);
+}
+.mode-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Burger menu (mobile nav): .site-nav-desktop is the plain inline row
+   (nav links + mode toggle + theme switcher), shown above the
+   breakpoint; .site-nav-mobile is MobileMenu's root (just the burger
+   button until opened), shown below it. Exactly one is visible at a
+   time -- both always render in the DOM, so there's no client-side
+   viewport check and no layout flash while JS loads. */
+.site-nav-mobile {
+  display: none;
+}
+@media (max-width: 860px) {
+  .site-nav-desktop {
+    display: none;
+  }
+  .site-nav-mobile {
+    display: block;
+  }
+}
+
+.nav-burger {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--color-surface-line);
+  background: var(--color-surface-soft);
+  color: var(--color-accent-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.nav-burger:hover {
+  background: var(--color-surface-line);
+}
+.nav-burger svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Dropdown panel: position: absolute anchors to header.site-nav (the
+   nearest positioned ancestor -- every theme sets position: sticky on
+   it, and sticky counts as "positioned" for this purpose) even though
+   the panel itself is nested a couple of divs deeper, so left/right: 0
+   span the full header width regardless of that nesting. */
+.nav-burger-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--color-surface-panel);
+  border-bottom: 1px solid var(--color-surface-line);
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.35);
+}
+.nav-burger-links {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.nav-burger-links a {
+  color: var(--color-ink-dim);
+}
+.nav-burger-links a:hover {
+  color: var(--color-accent-bright);
+}
+.nav-burger-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.nav-burger-controls .theme-switch {
+  flex-wrap: wrap;
+}
+
+/* Shared theme-switcher pill control — themed via the semantic tokens so
+   it looks native inside whichever theme is active. */
+.theme-switch {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-surface-line);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.theme-switch button {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--color-ink-dim);
+  font: inherit;
+  border-radius: 999px;
+}
+.theme-switch button.active {
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+.theme-switch button:not(.active):not(:disabled):hover {
+  color: var(--color-ink);
+}
+.theme-switch button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Scroll-reveal utility, shared across themes. Default is fade-up;
+   .reveal-left / .reveal-right slide in from the side instead, so
+   sections can alternate direction as the page is scrolled. */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-left {
+  transform: translateX(-64px);
+}
+.reveal-right {
+  transform: translateX(64px);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-left.in,
+.reveal-right.in {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

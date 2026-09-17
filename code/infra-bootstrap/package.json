@@ -1,5 +1,5 @@
 {
-  "name": "ch-ai-portfolio-infra",
+  "name": "ch-ai-portfolio-infra-bootstrap",
   "version": "1.0.0",
   "main": "main.js",
   "types": "main.ts",
@@ -10,7 +10,6 @@
     "synth": "cdktf synth",
     "diff": "cdktf diff",
     "deploy": "cdktf deploy",
-    "deploy:watch": "cdktf deploy --watch",
     "destroy": "cdktf destroy",
     "compile": "tsc --pretty --noEmit",
     "watch": "tsc -w"

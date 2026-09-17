@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Pixel theme preview — Sachin Sira Nagaraja</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #0a0614;
+  --bg-deep: #060410;
+  --panel: #170f2b;
+  --panel-alt: #1e1338;
+  --line: #4a2e6e;
+  --ink: #f4ecff;
+  --ink-dim: #a892cf;
+  --magenta: #ff2e88;
+  --magenta-deep: #b31760;
+  --cyan: #2be9ff;
+  --cyan-deep: #0f8fa8;
+  --gold: #ffd23f;
+  --green: #39ff8c;
+  --shadow-hard: #000000;
+  --font-arcade: "Press Start 2P", monospace;
+  --font-term: "VT323", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-term);
+  overflow-x: hidden;
+}
+
+body {
+  background-image:
+    radial-gradient(circle at 20% 0%, #2a1a4a 0%, transparent 45%),
+    radial-gradient(circle at 85% 20%, #3a1030 0%, transparent 40%),
+    linear-gradient(var(--bg-deep), var(--bg) 30%);
+  position: relative;
+}
+
+/* CRT scanline overlay across the whole page */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 500;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.16) 0px,
+    rgba(0,0,0,0.16) 1px,
+    transparent 2px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 501;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+}
+
+img, svg { image-rendering: pixelated; image-rendering: crisp-edges; }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+
+/* ---------- shared pixel-panel primitives ---------- */
+.pixel-frame {
+  background: var(--magenta);
+  padding: 5px;
+  position: relative;
+  box-shadow: 0 0 0 5px var(--shadow-hard);
+}
+.pixel-frame.cyan { background: var(--cyan); }
+.pixel-frame.gold { background: var(--gold); }
+.pixel-frame.green { background: var(--green); }
+.pixel-frame-inner {
+  background: var(--panel);
+  padding: 22px;
+}
+/* stepped corner notches, classic 8-bit window cut */
+.pixel-frame::before, .pixel-frame::after,
+.notch-tl, .notch-tr, .notch-bl, .notch-br {
+  content: "";
+  position: absolute;
+  width: 10px; height: 10px;
+  background: var(--bg);
+}
+.pixel-frame::before { top: -5px; left: -5px; }
+.pixel-frame::after { top: -5px; right: -5px; }
+.notch-bl { position: absolute; bottom: -5px; left: -5px; width: 10px; height: 10px; background: var(--bg); }
+.notch-br { position: absolute; bottom: -5px; right: -5px; width: 10px; height: 10px; background: var(--bg); }
+
+.icon { width: 16px; height: 16px; display: inline-block; vertical-align: -3px; }
+.icon-sm { width: 12px; height: 12px; vertical-align: -1px; }
+.icon-lg { width: 26px; height: 26px; vertical-align: -6px; }
+
+/* ---------- nav ---------- */
+.px-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg-deep);
+  border-bottom: 4px solid var(--magenta);
+  box-shadow: 0 4px 0 0 #000;
+}
+.px-nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 28px;
+  max-width: 1180px; margin: 0 auto;
+}
+.px-logo {
+  font-family: var(--font-arcade);
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 0 #000;
+}
+.px-logo span { color: var(--cyan); }
+.px-menu { display: flex; gap: 10px; list-style: none; margin: 0; padding: 0; }
+.px-menu a {
+  font-family: var(--font-arcade);
+  font-size: 9px;
+  color: var(--ink-dim);
+  text-decoration: none;
+  padding: 8px 10px;
+  border: 2px solid transparent;
+}
+.px-menu a:hover { color: var(--ink); border-color: var(--cyan); background: var(--panel); }
+.px-coin {
+  font-family: var(--font-arcade); font-size: 10px; color: var(--gold);
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ---------- hero / title screen ---------- */
+.hero {
+  padding: 56px 0 40px;
+  position: relative;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 44px;
+  align-items: center;
+}
+.char-card { width: 320px; }
+.char-photo-frame { line-height: 0; }
+.char-photo-frame img { display: block; width: 100%; height: auto; }
+.char-name-plate {
+  background: var(--panel-alt);
+  border: 3px solid var(--gold);
+  margin-top: -3px;
+  padding: 12px 14px;
+  text-align: center;
+}
+.char-name-plate .name {
+  font-family: var(--font-arcade);
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.6;
+  text-shadow: 2px 2px 0 #000;
+}
+.char-name-plate .class-line {
+  font-family: var(--font-term);
+  font-size: 16px;
+  color: var(--cyan);
+  margin-top: 6px;
+}
+.char-stats { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.stat-row { display: flex; align-items: center; gap: 8px; font-family: var(--font-arcade); font-size: 8px; }
+.stat-label { width: 34px; color: var(--ink-dim); }
+.stat-bar-track { flex: 1; height: 12px; background: #000; border: 2px solid var(--line); position: relative; }
+.stat-bar-fill { height: 100%; }
+.stat-bar-fill.hp { background: repeating-linear-gradient(90deg, var(--magenta) 0 4px, var(--magenta-deep) 4px 8px); width: 100%; }
+.stat-bar-fill.xp { background: repeating-linear-gradient(90deg, var(--cyan) 0 4px, var(--cyan-deep) 4px 8px); width: 92%; }
+.stat-bar-fill.lv { background: repeating-linear-gradient(90deg, var(--gold) 0 4px, #a5790a 4px 8px); width: 100%; }
+
+.hero-copy .eyebrow {
+  font-family: var(--font-arcade); font-size: 10px; color: var(--green);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 18px;
+}
+.hero-copy .eyebrow::before { content: "▸"; color: var(--green); animation: blink-caret 1s steps(1) infinite; }
+.hero-title {
+  font-family: var(--font-arcade);
+  font-size: 34px;
+  line-height: 1.5;
+  color: var(--ink);
+  text-shadow: 4px 4px 0 var(--magenta-deep), 8px 8px 0 #000;
+  margin: 0 0 22px;
+}
+.hero-title .hl { color: var(--gold); }
+.hero-sub {
+  font-family: var(--font-term);
+  font-size: 22px;
+  color: var(--ink-dim);
+  max-width: 46ch;
+  line-height: 1.5;
+  margin: 0 0 26px;
+}
+.press-start {
+  font-family: var(--font-arcade);
+  font-size: 12px;
+  color: var(--bg);
+  background: var(--gold);
+  border: none;
+  box-shadow: 0 6px 0 0 #a5790a, 0 6px 0 4px #000;
+  padding: 16px 26px;
+  display: inline-flex; align-items: center; gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  animation: blink-btn 1.4s steps(1) infinite;
+}
+.press-start:hover { filter: brightness(1.08); }
+.insert-coin {
+  font-family: var(--font-arcade); font-size: 9px; color: var(--ink-dim);
+  margin-top: 16px; letter-spacing: 1px;
+}
+
+@keyframes blink-caret { 50% { opacity: 0; } }
+@keyframes blink-btn { 0%, 60% { opacity: 1; } 80% { opacity: 0.55; } 100% { opacity: 1; } }
+
+/* Typewriter cursor shown next to any .type-target while (and briefly
+   after) it is being typed out on scroll; JS hides it once typing for
+   that element completes. */
+.type-cursor {
+  color: var(--cyan);
+  animation: blink-caret 0.85s steps(1) infinite;
+}
+
+.marquee-bar {
+  margin-top: 40px;
+  border-top: 3px dashed var(--line);
+  border-bottom: 3px dashed var(--line);
+  padding: 10px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marquee-track {
+  display: inline-block;
+  font-family: var(--font-arcade);
+  font-size: 10px;
+  color: var(--cyan);
+  animation: marquee 22s linear infinite;
+}
+.marquee-track span { margin-right: 48px; }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ---------- section heads ---------- */
+.section { padding: 64px 0; }
+.section-head {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 32px;
+}
+.section-head .num {
+  font-family: var(--font-arcade); font-size: 12px; color: var(--bg);
+  background: var(--cyan); padding: 8px 10px;
+}
+.section-head h2 {
+  font-family: var(--font-arcade); font-size: 16px; color: var(--ink);
+  margin: 0; text-shadow: 3px 3px 0 #000;
+}
+.section-head .rule { flex: 1; height: 3px; background: var(--line); }
+
+/* ---------- dialogue box (bio) ---------- */
+.dialogue {
+  background: var(--panel);
+  border: 4px solid var(--ink);
+  box-shadow: 0 0 0 4px #000;
+  padding: 26px 28px;
+  position: relative;
+  font-size: 22px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.dialogue-tail {
+  position: absolute; left: 40px; bottom: -20px;
+  width: 0; height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 16px solid var(--ink);
+}
+.dialogue-tail::before {
+  content: ""; position: absolute; left: -8px; top: -20px;
+  width: 0; height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid var(--panel);
+}
+.dialogue-label {
+  font-family: var(--font-arcade); font-size: 9px; color: var(--gold);
+  margin-bottom: 12px; display: block;
+}
+
+/* ---------- quest-accept callout ---------- */
+.quest-banner {
+  margin-top: 56px;
+  background: var(--panel-alt);
+  border: 3px solid var(--green);
+  padding: 22px 26px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  flex-wrap: wrap;
+}
+.quest-banner .tag {
+  font-family: var(--font-arcade); font-size: 9px; color: var(--bg);
+  background: var(--green); padding: 6px 10px; display: inline-block; margin-bottom: 10px;
+}
+.quest-banner p { margin: 0; font-size: 20px; color: var(--ink-dim); max-width: 52ch; }
+.quest-banner .cta {
+  font-family: var(--font-arcade); font-size: 10px; color: var(--bg);
+  background: var(--cyan); padding: 14px 18px; text-decoration: none;
+  box-shadow: 0 5px 0 0 var(--cyan-deep), 0 5px 0 4px #000;
+  white-space: nowrap;
+}
+
+/* ---------- level select (projects) ---------- */
+.level-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
+}
+.level-card {
+  background: var(--panel);
+  border: 3px solid var(--line);
+  padding: 22px;
+  transition: border-color .15s, transform .15s;
+}
+.level-card:hover { border-color: var(--magenta); transform: translateY(-4px); }
+.level-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.level-num {
+  font-family: var(--font-arcade); font-size: 18px; color: var(--gold);
+}
+.level-stars { display: flex; gap: 3px; color: var(--gold); }
+.level-card h3 {
+  font-family: var(--font-arcade); font-size: 13px; color: var(--ink);
+  margin: 0 0 12px;
+}
+.level-card p { font-size: 19px; color: var(--ink-dim); line-height: 1.5; margin: 0 0 18px; }
+.level-enter {
+  font-family: var(--font-arcade); font-size: 9px; color: var(--cyan);
+  text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+}
+.level-enter .icon { fill: var(--cyan); }
+
+/* ---------- quest log (experience) ---------- */
+.quest-log { display: flex; flex-direction: column; gap: 18px; }
+.quest-card {
+  background: var(--panel);
+  border: 3px solid var(--line);
+  padding: 20px 22px;
+  display: grid;
+  grid-template-columns: 120px 1fr 90px;
+  gap: 20px;
+  align-items: start;
+}
+.quest-status {
+  font-family: var(--font-arcade); font-size: 8px; color: var(--bg);
+  background: var(--green); padding: 5px 8px; display: inline-block; margin-bottom: 8px;
+}
+.quest-years { font-family: var(--font-arcade); font-size: 10px; color: var(--ink-dim); }
+.quest-title { font-family: var(--font-arcade); font-size: 12px; color: var(--ink); margin: 0 0 4px; }
+.quest-giver { font-size: 19px; color: var(--cyan); display: block; margin-bottom: 12px; }
+.quest-objectives { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.quest-objectives li { font-size: 18px; color: var(--ink-dim); display: flex; gap: 8px; align-items: baseline; }
+.quest-objectives .icon { fill: var(--green); flex-shrink: 0; }
+.quest-reward { font-family: var(--font-arcade); font-size: 9px; color: var(--gold); text-align: right; }
+
+/* ---------- side quests ---------- */
+.side-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.side-card {
+  background: var(--panel-alt);
+  border: 2px dashed var(--line);
+  padding: 18px;
+}
+.side-card .tag {
+  font-family: var(--font-arcade); font-size: 8px; color: var(--gold);
+  margin-bottom: 10px; display: block;
+}
+.side-card h4 { font-family: var(--font-arcade); font-size: 11px; color: var(--ink); margin: 0 0 10px; }
+.side-card p { font-size: 18px; color: var(--ink-dim); line-height: 1.5; margin: 0; }
+
+/* ---------- inventory (tech specs) ---------- */
+.inventory {
+  background: var(--panel);
+  border: 3px solid var(--cyan);
+  padding: 26px;
+}
+.inventory-title {
+  font-family: var(--font-arcade); font-size: 11px; color: var(--cyan);
+  margin: 0 0 20px;
+}
+.inv-row { display: grid; grid-template-columns: 160px 1fr; gap: 16px; padding: 10px 0; border-top: 1px solid var(--line); }
+.inv-row:first-of-type { border-top: none; }
+.inv-group { font-family: var(--font-arcade); font-size: 9px; color: var(--gold); }
+.inv-items { display: flex; flex-wrap: wrap; gap: 8px; }
+.inv-chip {
+  font-size: 16px; color: var(--ink);
+  background: var(--panel-alt); border: 1px solid var(--line);
+  padding: 4px 9px;
+}
+
+/* ---------- footer ---------- */
+.px-footer {
+  margin-top: 40px;
+  border-top: 4px solid var(--magenta);
+  background: var(--bg-deep);
+  padding: 36px 0;
+  text-align: center;
+}
+.px-footer .continue {
+  font-family: var(--font-arcade); font-size: 13px; color: var(--gold);
+  margin-bottom: 14px;
+}
+.px-footer .lives { display: flex; justify-content: center; gap: 18px; margin-bottom: 18px; }
+.px-footer .lives a { color: var(--magenta); }
+.px-footer .lives .icon-lg { fill: var(--magenta); }
+.px-footer .version { font-family: var(--font-arcade); font-size: 8px; color: var(--ink-dim); }
+
+@media (max-width: 860px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .char-card { width: 240px; margin: 0 auto; }
+  .hero-title { font-size: 22px; }
+  .level-grid { grid-template-columns: 1fr; }
+  .quest-card { grid-template-columns: 1fr; }
+  .side-grid { grid-template-columns: 1fr; }
+  .inv-row { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .type-cursor { animation: none; opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+<symbol id="i-star" viewBox="0 0 8 8"><rect x="3" y="0" width="2" height="1"/><rect x="2" y="1" width="4" height="1"/><rect x="1" y="2" width="6" height="1"/><rect x="0" y="3" width="8" height="1"/><rect x="1" y="4" width="6" height="1"/><rect x="0" y="5" width="2" height="1"/><rect x="3" y="5" width="2" height="1"/><rect x="6" y="5" width="2" height="1"/><rect x="0" y="6" width="1" height="1"/><rect x="0" y="7" width="1" height="1"/><rect x="7" y="7" width="1" height="1"/></symbol>
+<symbol id="i-heart" viewBox="0 0 8 7"><rect x="1" y="0" width="2" height="1"/><rect x="5" y="0" width="2" height="1"/><rect x="0" y="1" width="8" height="1"/><rect x="0" y="2" width="8" height="1"/><rect x="0" y="3" width="8" height="1"/><rect x="1" y="4" width="6" height="1"/><rect x="2" y="5" width="4" height="1"/><rect x="3" y="6" width="2" height="1"/></symbol>
+<symbol id="i-coin" viewBox="0 0 8 8"><rect x="1" y="0" width="6" height="1"/><rect x="0" y="1" width="8" height="1"/><rect x="0" y="2" width="2" height="1"/><rect x="3" y="2" width="2" height="1"/><rect x="6" y="2" width="2" height="1"/><rect x="0" y="3" width="2" height="1"/><rect x="3" y="3" width="2" height="1"/><rect x="6" y="3" width="2" height="1"/><rect x="0" y="4" width="2" height="1"/><rect x="3" y="4" width="2" height="1"/><rect x="6" y="4" width="2" height="1"/><rect x="0" y="5" width="2" height="1"/><rect x="3" y="5" width="2" height="1"/><rect x="6" y="5" width="2" height="1"/><rect x="0" y="6" width="8" height="1"/><rect x="1" y="7" width="6" height="1"/></symbol>
+<symbol id="i-controller" viewBox="0 0 14 8"><rect x="2" y="0" width="10" height="1"/><rect x="1" y="1" width="12" height="1"/><rect x="0" y="2" width="2" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="12" y="2" width="2" height="1"/><rect x="0" y="3" width="5" height="1"/><rect x="9" y="3" width="5" height="1"/><rect x="0" y="4" width="3" height="1"/><rect x="4" y="4" width="6" height="1"/><rect x="11" y="4" width="3" height="1"/><rect x="0" y="5" width="3" height="1"/><rect x="4" y="5" width="1" height="1"/><rect x="6" y="5" width="2" height="1"/><rect x="9" y="5" width="1" height="1"/><rect x="11" y="5" width="3" height="1"/><rect x="0" y="6" width="3" height="1"/><rect x="4" y="6" width="6" height="1"/><rect x="11" y="6" width="3" height="1"/><rect x="1" y="7" width="2" height="1"/><rect x="11" y="7" width="2" height="1"/></symbol>
+<symbol id="i-check" viewBox="0 0 7 7"><rect x="6" y="0" width="1" height="1"/><rect x="5" y="1" width="2" height="1"/><rect x="4" y="2" width="2" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="3" y="3" width="2" height="1"/><rect x="0" y="4" width="4" height="1"/><rect x="1" y="5" width="2" height="1"/><rect x="1" y="6" width="1" height="1"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 8 6"><rect x="2" y="0" width="1" height="1"/><rect x="1" y="1" width="2" height="1"/><rect x="0" y="2" width="8" height="1"/><rect x="0" y="3" width="8" height="1"/><rect x="1" y="4" width="2" height="1"/><rect x="2" y="5" width="1" height="1"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 8 8"><rect x="4" y="0" width="2" height="1"/><rect x="3" y="1" width="2" height="1"/><rect x="2" y="2" width="2" height="1"/><rect x="1" y="3" width="6" height="1"/><rect x="0" y="4" width="2" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="2" y="5" width="2" height="1"/><rect x="1" y="6" width="2" height="1"/><rect x="0" y="7" width="2" height="1"/></symbol>
+<symbol id="i-shield" viewBox="0 0 8 7"><rect x="1" y="0" width="6" height="1"/><rect x="0" y="1" width="8" height="1"/><rect x="0" y="2" width="8" height="1"/><rect x="0" y="3" width="8" height="1"/><rect x="1" y="4" width="6" height="1"/><rect x="2" y="5" width="4" height="1"/><rect x="3" y="6" width="2" height="1"/></symbol>
+</svg>
+
+<nav class="px-nav">
+  <div class="px-nav-inner">
+    <div class="px-logo">SACHIN<span>.EXE</span></div>
+    <ul class="px-menu">
+      <li><a href="#projects">LEVELS</a></li>
+      <li><a href="#career">QUESTS</a></li>
+      <li><a href="#specs">STATS</a></li>
+      <li><a href="#contact">CONTINUE</a></li>
+    </ul>
+    <div class="px-coin"><svg class="icon"><use href="#i-coin"/></svg> x01</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div class="char-card">
+      <div class="pixel-frame">
+        <div class="notch-bl"></div><div class="notch-br"></div>
+        <div class="char-photo-frame">
+          <img src="data:image/png;base64,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" alt="Pixel-art portrait of Sachin Sira Nagaraja" />
+        </div>
+      </div>
+      <div class="char-name-plate">
+        <div class="name">SACHIN SIRA<br/>NAGARAJA</div>
+        <div class="class-line">CLASS: FULL-STACK ENGINEER</div>
+      </div>
+      <div class="char-stats">
+        <div class="stat-row"><span class="stat-label">LV.12</span><div class="stat-bar-track"><div class="stat-bar-fill lv"></div></div></div>
+        <div class="stat-row"><span class="stat-label">HP</span><div class="stat-bar-track"><div class="stat-bar-fill hp"></div></div></div>
+        <div class="stat-row"><span class="stat-label">XP</span><div class="stat-bar-track"><div class="stat-bar-fill xp"></div></div></div>
+      </div>
+    </div>
+
+    <div class="hero-copy">
+      <div class="eyebrow">NEW GAME — CONTINUE PROFILE</div>
+      <h1 class="hero-title">BUILDING AT <span class="hl">SCALE</span>,<br/>END TO END.</h1>
+      <p class="hero-sub">Senior full-stack engineer at Oracle — 12+ years across MERN, ASP.NET &amp; cloud-native architecture. Currently shipping the Oracle Cloud Shell &amp; UXE Console.</p>
+      <a class="press-start" href="#projects"><svg class="icon"><use href="#i-controller"/></svg> PRESS START</a>
+      <div class="insert-coin">INSERT COIN TO CONTINUE ▸ SCROLL DOWN</div>
+    </div>
+  </div>
+
+  <div class="marquee-bar">
+    <div class="marquee-track">
+      <span>★ 12+ YEARS MERN / ASP.NET / CLOUD</span>
+      <span>★ CURRENTLY: ORACLE CLOUD SHELL &amp; UXE CONSOLE</span>
+      <span>★ CASE STUDIES: CHITRAGUPTHA &amp; TTL CACHE</span>
+      <span>★ OPEN TO NEW ROLES</span>
+      <span>★ 12+ YEARS MERN / ASP.NET / CLOUD</span>
+      <span>★ CURRENTLY: ORACLE CLOUD SHELL &amp; UXE CONSOLE</span>
+      <span>★ CASE STUDIES: CHITRAGUPTHA &amp; TTL CACHE</span>
+      <span>★ OPEN TO NEW ROLES</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section" style="padding-top:8px;">
+    <span class="dialogue-label">&gt; PROFILE.TXT</span>
+    <div class="dialogue">
+      <span class="type-target" data-text="Senior full-stack engineer at Oracle, enhancing user experience and managing UI components across the Oracle Cloud ecosystem while leading plugin-migration modernization — twelve-plus years across MERN, ASP.NET, and cloud-native architecture, shipping secure, accessible, high-performing platforms."></span><span class="type-cursor">▌</span>
+      <div class="dialogue-tail"></div>
+    </div>
+
+    <div class="quest-banner">
+      <div>
+        <span class="tag">NEW QUEST AVAILABLE</span>
+        <p><span class="type-target" data-text="Looking for fullstack or backend-leaning engineering work. Happy to talk."></span><span class="type-cursor">▌</span></p>
+      </div>
+      <a class="quest-banner-cta cta" href="mailto:hello@ch-ai.in">PRESS A TO EMAIL →</a>
+    </div>
+  </section>
+
+  <section class="section" id="projects">
+    <div class="section-head">
+      <span class="num">01</span>
+      <h2>LEVEL SELECT — FEATURED PROJECTS</h2>
+      <span class="rule"></span>
+    </div>
+    <div class="level-grid">
+      <article class="level-card">
+        <div class="level-card-top">
+          <span class="level-num">01</span>
+          <span class="level-stars"><svg class="icon-sm"><use href="#i-star"/></svg><svg class="icon-sm"><use href="#i-star"/></svg><svg class="icon-sm"><use href="#i-star"/></svg></span>
+        </div>
+        <h3>CHITRAGUPTHA</h3>
+        <p><span class="type-target" data-text="A web app for leaving public good-deed and bad-deed feedback, built around consent and legal-risk questions worked through before a line of the architecture was written."></span><span class="type-cursor">▌</span></p>
+        <a class="level-enter" href="#">ENTER LEVEL <svg class="icon-sm"><use href="#i-arrow"/></svg></a>
+      </article>
+      <article class="level-card">
+        <div class="level-card-top">
+          <span class="level-num">02</span>
+          <span class="level-stars"><svg class="icon-sm"><use href="#i-star"/></svg><svg class="icon-sm"><use href="#i-star"/></svg><svg class="icon-sm"><use href="#i-star"/></svg><svg class="icon-sm"><use href="#i-star"/></svg></span>
+        </div>
+        <h3>TTL CACHE MODULE</h3>
+        <p><span class="type-target" data-text="A client-side TypeScript cache: a closure-based singleton, a microtask-batched event bus, and a React hook layer sitting on top of a fully generic-typed core."></span><span class="type-cursor">▌</span></p>
+        <a class="level-enter" href="#">ENTER LEVEL <svg class="icon-sm"><use href="#i-arrow"/></svg></a>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="career">
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2>QUEST LOG — COMPLETED</h2>
+      <span class="rule"></span>
+    </div>
+    <div class="quest-log">
+
+      <div class="quest-card">
+        <div>
+          <span class="quest-status">ACTIVE</span>
+          <div class="quest-years">2025<br/>PRESENT</div>
+        </div>
+        <div>
+          <h3 class="quest-title">SENIOR MEMBER OF TECHNICAL STAFF</h3>
+          <span class="quest-giver">QUEST GIVER: ORACLE</span>
+          <ul class="quest-objectives">
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="Core UI for Oracle Cloud Shell and the UXE Console, a config-driven framework standardizing UI across plug-in teams"></span><span class="type-cursor">▌</span></li>
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="4 plug-in migrations delivered in one year; UI responsiveness up 20–30%" data-delay="250"></span><span class="type-cursor">▌</span></li>
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="30+ customer-reported production issues resolved" data-delay="500"></span><span class="type-cursor">▌</span></li>
+          </ul>
+        </div>
+        <div class="quest-reward">+XP<br/>MAX</div>
+      </div>
+
+      <div class="quest-card">
+        <div>
+          <span class="quest-status">CLEAR</span>
+          <div class="quest-years">2019<br/>–2025</div>
+        </div>
+        <div>
+          <h3 class="quest-title">STAFF SOFTWARE ENGINEER</h3>
+          <span class="quest-giver">QUEST GIVER: DILIGENT (RSAM)</span>
+          <ul class="quest-objectives">
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="GRC platform on HighBond — risk and audit workflows, including for the U.S. Army"></span><span class="type-cursor">▌</span></li>
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="AI chatbot response time cut from 10–15s to 6–8s (~50% faster)" data-delay="250"></span><span class="type-cursor">▌</span></li>
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="AngularJS → React migration; infra cost down ~10%" data-delay="500"></span><span class="type-cursor">▌</span></li>
+          </ul>
+        </div>
+        <div class="quest-reward">+XP<br/>5200</div>
+      </div>
+
+      <div class="quest-card">
+        <div>
+          <span class="quest-status">CLEAR</span>
+          <div class="quest-years">2016<br/>–2019</div>
+        </div>
+        <div>
+          <h3 class="quest-title">SPECIALIST SOFTWARE ENGINEER</h3>
+          <span class="quest-giver">QUEST GIVER: ONE ADVANCED</span>
+          <ul class="quest-objectives">
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="Laserform HUB — digital government-compliant legal forms for solicitors"></span><span class="type-cursor">▌</span></li>
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="Coroner&#x27;s Notification System for UK healthcare &amp; law enforcement" data-delay="250"></span><span class="type-cursor">▌</span></li>
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="Migrated a 20-year-old C++ application to AWS" data-delay="500"></span><span class="type-cursor">▌</span></li>
+          </ul>
+        </div>
+        <div class="quest-reward">+XP<br/>3400</div>
+      </div>
+
+      <div class="quest-card">
+        <div>
+          <span class="quest-status">CLEAR</span>
+          <div class="quest-years">2014<br/>–2016</div>
+        </div>
+        <div>
+          <h3 class="quest-title">SOFTWARE ENGINEER</h3>
+          <span class="quest-giver">QUEST GIVER: NESS TECHNOLOGIES</span>
+          <ul class="quest-objectives">
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="Vacation Management &amp; NessEcity — HR/workforce apps for global delivery centers"></span><span class="type-cursor">▌</span></li>
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="JoiNess &amp; BGV — candidate onboarding and background verification" data-delay="250"></span><span class="type-cursor">▌</span></li>
+          </ul>
+        </div>
+        <div class="quest-reward">+XP<br/>2100</div>
+      </div>
+
+      <div class="quest-card">
+        <div>
+          <span class="quest-status">CLEAR</span>
+          <div class="quest-years">2014</div>
+        </div>
+        <div>
+          <h3 class="quest-title">SYSTEM ENGINEER</h3>
+          <span class="quest-giver">QUEST GIVER: TENET TECHNETRONICS</span>
+          <ul class="quest-objectives">
+            <li><svg class="icon-sm"><use href="#i-check"/></svg> <span class="type-target" data-text="Cloud IoT: Water Dispenser API, Energy Meter, GPS vehicle tracking for forest transportation"></span><span class="type-cursor">▌</span></li>
+          </ul>
+        </div>
+        <div class="quest-reward">+XP<br/>900</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>SIDE QUESTS — OFF THE CLOCK</h2>
+      <span class="rule"></span>
+    </div>
+    <div class="side-grid">
+      <div class="side-card">
+        <span class="tag">SIDE QUEST</span>
+        <h4>PROMPT COOKBOOK</h4>
+        <p><span class="type-target" data-text="A local-first MERN app for managing, organizing, and benchmarking AI prompts across multiple platforms."></span><span class="type-cursor">▌</span></p>
+      </div>
+      <div class="side-card">
+        <span class="tag">SIDE QUEST</span>
+        <h4>DUCATI OWNERS CLUB BANGALORE</h4>
+        <p><span class="type-target" data-text="Community Champion coordinating event planning, logistics, and member engagement for 450+ riders."></span><span class="type-cursor">▌</span></p>
+      </div>
+      <div class="side-card">
+        <span class="tag">SIDE QUEST</span>
+        <h4>3D PRINTING &amp; SELF-HOSTED NAS</h4>
+        <p><span class="type-target" data-text="Functional 3D-printed components on a Bambu Lab A1 Mini, alongside a self-hosted NAS for secure, local-first data storage."></span><span class="type-cursor">▌</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="specs">
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2>INVENTORY — TECH SPECS</h2>
+      <span class="rule"></span>
+    </div>
+    <div class="inventory">
+      <div class="inventory-title"><svg class="icon" style="fill:var(--cyan)"><use href="#i-shield"/></svg> EQUIPPED ITEMS</div>
+      <div class="inv-row">
+        <div class="inv-group">PRIMARY STACK</div>
+        <div class="inv-items"><span class="inv-chip">MongoDB</span><span class="inv-chip">Express.js</span><span class="inv-chip">React.js</span><span class="inv-chip">Node.js</span></div>
+      </div>
+      <div class="inv-row">
+        <div class="inv-group">LANGUAGES</div>
+        <div class="inv-items"><span class="inv-chip">JavaScript</span><span class="inv-chip">TypeScript</span><span class="inv-chip">C#</span><span class="inv-chip">HTML/CSS</span></div>
+      </div>
+      <div class="inv-row">
+        <div class="inv-group">CLOUD &amp; AI</div>
+        <div class="inv-items"><span class="inv-chip">AWS S3</span><span class="inv-chip">EC2</span><span class="inv-chip">Lambda</span><span class="inv-chip">Bedrock</span><span class="inv-chip">Prompt Eng.</span></div>
+      </div>
+      <div class="inv-row">
+        <div class="inv-group">DATA</div>
+        <div class="inv-items"><span class="inv-chip">MS SQL</span><span class="inv-chip">MySQL</span><span class="inv-chip">DynamoDB</span></div>
+      </div>
+      <div class="inv-row">
+        <div class="inv-group">TOOLING</div>
+        <div class="inv-items"><span class="inv-chip">Git</span><span class="inv-chip">GitHub Actions</span><span class="inv-chip">Docker</span></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="px-footer" id="contact">
+  <div class="continue">CONTINUE? <span style="color:var(--cyan)">Y</span> / <span style="color:var(--ink-dim)">N</span></div>
+  <div class="lives">
+    <a href="mailto:hello@ch-ai.in"><svg class="icon-lg"><use href="#i-heart"/></svg></a>
+    <a href="https://github.com/sachin-sn" target="_blank" rel="noreferrer"><svg class="icon-lg"><use href="#i-heart"/></svg></a>
+    <a href="https://linkedin.com/in/sachin-s-nagaraja" target="_blank" rel="noreferrer"><svg class="icon-lg"><use href="#i-heart"/></svg></a>
+  </div>
+  <div class="version">SACHIN-SIRA-NAGARAJA.EXE — v1.0.0 — © 2026 BENGALURU, IN</div>
+</footer>
+
+<script>
+(function () {
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var targets = Array.prototype.slice.call(document.querySelectorAll(".type-target"));
+
+  function showFullInstant(el) {
+    el.textContent = el.getAttribute("data-text") || "";
+    var cursor = el.nextElementSibling;
+    if (cursor && cursor.classList.contains("type-cursor")) cursor.style.display = "none";
+  }
+
+  if (!targets.length) return;
+
+  if (reduceMotion || !("IntersectionObserver" in window)) {
+    targets.forEach(showFullInstant);
+    return;
+  }
+
+  // Reserve each box's final height up front (measured from the full text,
+  // at the real webfont metrics) so the surrounding card/dialogue box never
+  // grows while the text is typing in -- it's already sized for the full
+  // line, just visually empty below the caret until typing catches up.
+  function reserveHeight(el) {
+    var box = el.closest("li, p, .dialogue") || el.parentElement;
+    if (!box) return;
+    var prevText = el.textContent;
+    var prevMinHeight = box.style.minHeight;
+    box.style.minHeight = "0px";
+    el.textContent = el.getAttribute("data-text") || "";
+    var full = box.getBoundingClientRect().height;
+    el.textContent = prevText;
+    box.style.minHeight = Math.ceil(full) + "px";
+    if (prevMinHeight) box.dataset.prevMinHeight = prevMinHeight;
+  }
+
+  function reserveAll() {
+    targets.forEach(reserveHeight);
+  }
+
+  function startTypewriter() {
+    reserveAll();
+
+    // Re-measure on resize (debounced) -- a narrower/wider viewport can
+    // rewrap the full text onto a different number of lines.
+    var resizeTimer;
+    window.addEventListener("resize", function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(reserveAll, 150);
+    });
+
+    function typeEl(el) {
+      var full = el.getAttribute("data-text") || "";
+      var cursor = el.nextElementSibling && el.nextElementSibling.classList.contains("type-cursor")
+        ? el.nextElementSibling
+        : null;
+      var len = full.length;
+      // Deliberately unhurried, game-dialogue pacing -- short lines still
+      // read quickly, long paragraphs are capped so they don't drag on.
+      var interval = Math.max(16, Math.min(48, 1600 / Math.max(len, 1)));
+      var i = 0;
+      var timer = setInterval(function () {
+        i += 1;
+        el.textContent = full.slice(0, i);
+        if (i >= len) {
+          clearInterval(timer);
+          if (cursor) cursor.style.display = "none";
+        }
+      }, interval);
+    }
+
+    var io = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          var el = entry.target;
+          io.unobserve(el);
+          var delay = parseInt(el.getAttribute("data-delay") || "0", 10);
+          if (delay) {
+            setTimeout(function () { typeEl(el); }, delay);
+          } else {
+            typeEl(el);
+          }
+        });
+      },
+      { threshold: 0.35 }
+    );
+
+    targets.forEach(function (el) { io.observe(el); });
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(startTypewriter).catch(startTypewriter);
+  } else {
+    startTypewriter();
+  }
+})();
+</script>
+
+</body>
+</html>

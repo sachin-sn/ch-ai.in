@@ -1,0 +1,534 @@
+/*
+  Monochrome theme -- a precise, editorial "index" identity: strict
+  shades of black/white/grey only (no hue, in either light or dark
+  mode), numbered sections, ledger-style rows, and a "precision reveal"
+  scroll-animation system distinct from the other three themes (see
+  MonoReveal.tsx) -- elements rise into place a beat apart and section
+  rules draw themselves left-to-right, like rows being stamped into an
+  index rather than just fading in.
+
+  This file owns three things, same split as pixel.css/material.css:
+  (1) the semantic token overrides for [data-theme="monochrome"] (light)
+  and [data-theme="monochrome"][data-mode="dark"] that the shared chrome
+  (Nav, Footer, ThemeSwitcher, ModeToggle) picks up automatically; (2) a
+  reskin of that shared chrome to match Mono's hard-edged look; (3) the
+  mo-* structural classes used only by themes/monochrome/MonochromeHome.tsx,
+  plus the .mo-reveal/.mo-stagger/.mo-section-head reveal-on-scroll system
+  driven by themes/monochrome/MonoReveal.tsx.
+*/
+
+[data-theme="monochrome"] {
+  --color-surface: #ffffff;
+  --color-surface-panel: #f7f7f7;
+  --color-surface-soft: #eeeeee;
+  --color-surface-line: #d4d4d4;
+  --color-ink: #0a0a0a;
+  --color-ink-dim: #6b6b6b;
+  --color-accent: #0a0a0a;
+  --color-accent-bright: #3a3a3a;
+  --color-accent-deep: #000000;
+  --color-highlight: #404040;
+
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
+}
+
+[data-theme="monochrome"][data-mode="dark"] {
+  --color-surface: #0a0a0a;
+  --color-surface-panel: #141414;
+  --color-surface-soft: #1c1c1c;
+  --color-surface-line: #383838;
+  --color-ink: #f5f5f5;
+  --color-ink-dim: #9a9a9a;
+  --color-accent: #f5f5f5;
+  --color-accent-bright: #d4d4d4;
+  --color-accent-deep: #ffffff;
+  --color-highlight: #bdbdbd;
+}
+
+[data-theme="monochrome"] body {
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.mo-icon-sm { width: 16px; height: 16px; display: inline-block; }
+
+/* ---------------- shared chrome reskin ---------------- */
+[data-theme="monochrome"] .site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--color-surface);
+  border-bottom: 2px solid var(--color-ink);
+}
+[data-theme="monochrome"] .site-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+[data-theme="monochrome"] .site-nav nav a {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+[data-theme="monochrome"] footer.ledger-rule {
+  border-top: 4px solid var(--color-ink);
+  background: var(--color-surface);
+}
+[data-theme="monochrome"] footer.ledger-rule .font-display {
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+/* ---------------- hero ---------------- */
+[data-theme="monochrome"] .mo-hero {
+  border-bottom: 4px solid var(--color-ink);
+}
+[data-theme="monochrome"] .mo-hero-grid {
+  /* padding-top/-bottom only, deliberately not the `padding` shorthand:
+     this element also carries Tailwind's `px-6` utility class for its
+     horizontal padding (matching the shared Nav's own container), and a
+     shorthand here would set padding-left/-right to 0 and silently win
+     over px-6 (this selector has higher specificity), flushing the hero
+     content against the viewport edge on mobile while the nav above it
+     stayed correctly inset -- that mismatch was the "first section not
+     aligned" bug. */
+  padding-top: 56px;
+  padding-bottom: 40px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 60px;
+  align-items: start;
+}
+[data-theme="monochrome"] .mo-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+  margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+[data-theme="monochrome"] .mo-eyebrow b { color: var(--color-ink); }
+[data-theme="monochrome"] .mo-hero-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 3.4rem;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  margin: 0 0 26px;
+  color: var(--color-ink);
+  text-transform: uppercase;
+}
+[data-theme="monochrome"] .mo-hero-sub {
+  font-size: 1.14rem;
+  line-height: 1.6;
+  color: var(--color-ink-dim);
+  max-width: 54ch;
+  margin: 0 0 30px;
+}
+[data-theme="monochrome"] .mo-btn-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 26px;
+}
+[data-theme="monochrome"] .mo-btn {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.86rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 13px 24px;
+  text-decoration: none;
+  border: 2px solid var(--color-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+[data-theme="monochrome"] .mo-btn-filled {
+  background: var(--color-ink);
+  color: var(--color-surface);
+}
+[data-theme="monochrome"] .mo-btn-filled:hover {
+  background: var(--color-accent-bright);
+  border-color: var(--color-accent-bright);
+}
+[data-theme="monochrome"] .mo-btn-outline {
+  background: transparent;
+  color: var(--color-ink);
+}
+[data-theme="monochrome"] .mo-btn-outline:hover {
+  background: var(--color-surface-soft);
+}
+[data-theme="monochrome"] .mo-chip-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+[data-theme="monochrome"] .mo-chip {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  border: 1px solid var(--color-surface-line);
+  color: var(--color-ink-dim);
+}
+[data-theme="monochrome"] .mo-chip.dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+[data-theme="monochrome"] .mo-chip.dot::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-ink);
+  display: inline-block;
+}
+
+[data-theme="monochrome"] .mo-portrait-col { position: relative; }
+[data-theme="monochrome"] .mo-portrait-frame {
+  border: 3px solid var(--color-ink);
+  padding: 10px;
+  background: var(--color-surface);
+  position: relative;
+  aspect-ratio: 4 / 5;
+}
+[data-theme="monochrome"] .mo-portrait-frame img { filter: grayscale(1) contrast(1.05); }
+[data-theme="monochrome"] .mo-portrait-caption {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+[data-theme="monochrome"] .mo-ticker {
+  border-top: 2px solid var(--color-ink);
+  padding: 12px 0;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-dim);
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+[data-theme="monochrome"] .mo-ticker b { color: var(--color-ink); }
+
+/* ---------------- sections ---------------- */
+[data-theme="monochrome"] .mo-section {
+  padding: 56px 0;
+  border-bottom: 1px solid var(--color-surface-line);
+}
+[data-theme="monochrome"] .mo-section:last-of-type { border-bottom: none; }
+[data-theme="monochrome"] .mo-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin-bottom: 36px;
+}
+[data-theme="monochrome"] .mo-section-num {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--color-ink-dim);
+  letter-spacing: 0.06em;
+}
+[data-theme="monochrome"] .mo-section-head h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.7rem;
+  margin: 0;
+  color: var(--color-ink);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+[data-theme="monochrome"] .mo-section-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-surface-line);
+}
+
+/* ---------------- bio pull-quote ---------------- */
+[data-theme="monochrome"] .mo-bio-text {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.7rem;
+  line-height: 1.42;
+  color: var(--color-ink);
+  margin: 0;
+  max-width: 46ch;
+}
+[data-theme="monochrome"] .mo-banner {
+  margin-top: 32px;
+  border: 2px solid var(--color-ink);
+  padding: 22px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+[data-theme="monochrome"] .mo-banner-text .mo-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-dim);
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+[data-theme="monochrome"] .mo-banner-text p {
+  margin: 0;
+  font-size: 1.02rem;
+  color: var(--color-ink);
+  max-width: 50ch;
+}
+
+/* ---------------- projects (numbered directory) ---------------- */
+[data-theme="monochrome"] .mo-project-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 28px;
+  padding: 28px 0;
+  border-top: 1px solid var(--color-surface-line);
+}
+[data-theme="monochrome"] .mo-project-row:first-child { border-top: none; }
+[data-theme="monochrome"] .mo-project-index {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.2rem;
+  color: var(--color-surface-line);
+  line-height: 1;
+}
+[data-theme="monochrome"] .mo-project-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-ink-dim);
+  margin-bottom: 8px;
+}
+[data-theme="monochrome"] .mo-project-row h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin: 0 0 10px;
+  color: var(--color-ink);
+  text-transform: uppercase;
+}
+[data-theme="monochrome"] .mo-project-row p {
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--color-ink-dim);
+  margin: 0 0 16px;
+  max-width: 60ch;
+}
+[data-theme="monochrome"] .mo-project-link {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--color-ink);
+}
+[data-theme="monochrome"] .mo-project-link .mo-icon-sm { transition: transform 0.15s ease; }
+[data-theme="monochrome"] .mo-project-link:hover .mo-icon-sm { transform: translateX(3px); }
+
+/* ---------------- experience ledger ---------------- */
+[data-theme="monochrome"] .mo-ledger-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 28px;
+  padding: 24px 0;
+  border-top: 1px solid var(--color-surface-line);
+}
+[data-theme="monochrome"] .mo-ledger-row:first-child { border-top: none; }
+[data-theme="monochrome"] .mo-ledger-years {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--color-ink);
+}
+[data-theme="monochrome"] .mo-ledger-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+[data-theme="monochrome"] .mo-current-badge {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 1px solid var(--color-ink);
+  color: var(--color-ink);
+  padding: 2px 8px;
+}
+[data-theme="monochrome"] .mo-ledger-row h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.14rem;
+  margin: 0 0 2px;
+  color: var(--color-ink);
+}
+[data-theme="monochrome"] .mo-ledger-company {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: block;
+  margin-bottom: 12px;
+}
+[data-theme="monochrome"] .mo-ledger-row ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-ink-dim);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+[data-theme="monochrome"] .mo-ledger-row li { margin-bottom: 4px; }
+
+/* ---------------- off the clock ---------------- */
+[data-theme="monochrome"] .mo-side-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--color-surface-line);
+  border-left: 1px solid var(--color-surface-line);
+}
+[data-theme="monochrome"] .mo-side-card {
+  padding: 24px 26px;
+  border-right: 1px solid var(--color-surface-line);
+  border-bottom: 1px solid var(--color-surface-line);
+}
+[data-theme="monochrome"] .mo-side-card h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0 0 10px;
+  color: var(--color-ink);
+  text-transform: uppercase;
+}
+[data-theme="monochrome"] .mo-side-card p {
+  font-size: 0.9rem;
+  color: var(--color-ink-dim);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ---------------- spec sheet ---------------- */
+[data-theme="monochrome"] .mo-specs-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 24px;
+  padding: 16px 0;
+  border-top: 1px solid var(--color-surface-line);
+}
+[data-theme="monochrome"] .mo-specs-row:first-child { border-top: none; }
+[data-theme="monochrome"] .mo-specs-label {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-dim);
+}
+[data-theme="monochrome"] .mo-specs-value {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  color: var(--color-ink);
+}
+
+@media (max-width: 860px) {
+  [data-theme="monochrome"] .mo-hero-grid { grid-template-columns: 1fr; }
+  [data-theme="monochrome"] .mo-portrait-col { max-width: 320px; margin: 0 auto; }
+  [data-theme="monochrome"] .mo-hero-title { font-size: 2.2rem; }
+  [data-theme="monochrome"] .mo-project-row,
+  [data-theme="monochrome"] .mo-ledger-row,
+  [data-theme="monochrome"] .mo-specs-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  [data-theme="monochrome"] .mo-side-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------------- precision-reveal animation system ----------------
+   Distinct from the other three themes' motion languages (magazine's
+   scroll-direction-tied slide, pixel's typewriter dialogue, material's
+   ambient floating blobs): elements rise into place a beat apart, like
+   rows being stamped into a ledger, and section rules draw themselves
+   left-to-right like a ruler stroke. Driven by MonoReveal.tsx, which
+   only toggles one "in" class -- everything else here is CSS keyed off
+   that class and (for grouped rows) off direct-child position. */
+.mo-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.mo-reveal.in { opacity: 1; transform: translateY(0); }
+
+.mo-stagger > * {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.mo-stagger.in > * { opacity: 1; transform: translateY(0); }
+.mo-stagger.in > *:nth-child(1) { transition-delay: 0s; }
+.mo-stagger.in > *:nth-child(2) { transition-delay: 0.08s; }
+.mo-stagger.in > *:nth-child(3) { transition-delay: 0.16s; }
+.mo-stagger.in > *:nth-child(4) { transition-delay: 0.24s; }
+.mo-stagger.in > *:nth-child(5) { transition-delay: 0.32s; }
+.mo-stagger.in > *:nth-child(6) { transition-delay: 0.4s; }
+
+.mo-section-head .mo-section-num,
+.mo-section-head h2 {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.mo-section-head.in .mo-section-num,
+.mo-section-head.in h2 { opacity: 1; transform: translateY(0); }
+
+.mo-section-head .mo-section-rule {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0.15s;
+}
+.mo-section-head.in .mo-section-rule { transform: scaleX(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .mo-reveal,
+  .mo-stagger > *,
+  .mo-section-head .mo-section-num,
+  .mo-section-head h2 {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .mo-section-head .mo-section-rule {
+    transform: scaleX(1);
+    transition: none;
+  }
+}

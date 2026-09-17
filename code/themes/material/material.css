@@ -1,0 +1,293 @@
+/*
+  Material theme — Material Design structure (elevation, chips, FAB,
+  stepper, top-app-bar conventions) fused with a warm, light boho palette
+  instead of Material's usual cool blues/greys: terracotta/rose/mustard/sage
+  on a cream ground, with a supported dark mode toggled independently of
+  the multi-theme switcher via <html data-mode="light|dark">.
+
+  This file owns three things: (1) the semantic token overrides for
+  [data-theme="material"] (light) and [data-theme="material"][data-mode="dark"]
+  that the shared chrome (Nav, Footer, ThemeSwitcher, ModeToggle) picks up
+  automatically; (2) material-only extra tokens (rose/mustard/shadow) used
+  by the m-* structural classes below; (3) the m-* classes used only by
+  themes/material/MaterialHome.tsx. Same pattern as pixel.css.
+*/
+
+[data-theme="material"] {
+  --color-surface: #faf5ec;
+  --color-surface-panel: #fffbf5;
+  --color-surface-soft: #f2e9da;
+  --color-surface-line: #e4d5bf;
+  --color-ink: #3d2b1f;
+  --color-ink-dim: #8a7361;
+  --color-accent: #c1652f;
+  --color-accent-bright: #d97a4d;
+  --color-accent-deep: #8a4a26;
+  --color-highlight: #7d8f6a;
+
+  --font-display: var(--font-lora), Georgia, serif;
+  --font-body: var(--font-nunito), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
+
+  /* Extra boho-only accents beyond the shared token contract. */
+  --m-rose: #c98a7d;
+  --m-mustard: #cf9a3f;
+  --m-shadow: 30, 20, 10;
+}
+
+[data-theme="material"][data-mode="dark"] {
+  --color-surface: #201810;
+  --color-surface-panel: #2b2117;
+  --color-surface-soft: #362a1d;
+  --color-surface-line: #4a3a28;
+  --color-ink: #f3e8d9;
+  --color-ink-dim: #b7a58e;
+  --color-accent: #e2894f;
+  --color-accent-bright: #f0a86e;
+  --color-accent-deep: #b5651d;
+  --color-highlight: #a3b592;
+
+  --m-rose: #d9a89c;
+  --m-mustard: #e0b566;
+  --m-shadow: 0, 0, 0;
+}
+
+[data-theme="material"] body {
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+/* Material elevation, warm-tinted rather than neutral grey shadows. */
+[data-theme="material"] .m-elev-1 { box-shadow: 0 1px 2px rgba(var(--m-shadow), 0.10), 0 1px 4px rgba(var(--m-shadow), 0.08); }
+[data-theme="material"] .m-elev-2 { box-shadow: 0 2px 6px rgba(var(--m-shadow), 0.12), 0 4px 14px rgba(var(--m-shadow), 0.10); }
+[data-theme="material"] .m-elev-3 { box-shadow: 0 6px 18px rgba(var(--m-shadow), 0.16), 0 3px 8px rgba(var(--m-shadow), 0.10); }
+
+.m-icon { width: 20px; height: 20px; display: inline-block; }
+.m-icon-sm { width: 16px; height: 16px; }
+
+/* ---------------- shared chrome reskin ---------------- */
+[data-theme="material"] .site-nav {
+  position: sticky; top: 0; z-index: 40;
+  background: color-mix(in srgb, var(--color-surface-panel) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-surface-line);
+}
+[data-theme="material"] .site-brand { font-family: var(--font-display); font-weight: 600; }
+[data-theme="material"] .site-nav nav a { font-family: var(--font-body); font-weight: 700; }
+[data-theme="material"] footer.ledger-rule {
+  position: relative; overflow: hidden;
+  background: var(--color-surface-soft);
+  border-top: 1px solid var(--color-surface-line);
+}
+[data-theme="material"] footer.ledger-rule::before,
+[data-theme="material"] footer.ledger-rule::after {
+  content: ""; position: absolute; border-radius: 50%; filter: blur(2px);
+  pointer-events: none; z-index: 0; animation: m-drift 22s ease-in-out infinite;
+}
+[data-theme="material"] footer.ledger-rule::before {
+  width: 180px; height: 180px; background: var(--m-rose);
+  top: -80px; left: 6%; opacity: 0.16;
+}
+[data-theme="material"] footer.ledger-rule::after {
+  width: 130px; height: 130px; background: var(--m-mustard);
+  bottom: -70px; right: 10%; opacity: 0.16; animation-delay: -9s; animation-duration: 18s;
+}
+[data-theme="material"] footer.ledger-rule > * { position: relative; z-index: 1; }
+[data-theme="material"] .theme-switch {
+  border-radius: 999px;
+  border: 1px solid var(--color-surface-line);
+  background: var(--color-surface-soft);
+}
+[data-theme="material"] .theme-switch button.active {
+  background: var(--color-accent); color: #fffaf3;
+}
+
+/* ---------------- ambient boho background decoration ---------------- */
+/* Every section gets its own .m-section (position:relative) with a couple
+   of low-opacity color-blob divs absolutely positioned behind the content,
+   plus a .m-section-inner wrapper that stacks the real content above them.
+   Blobs drift slowly and asynchronously (different duration/delay per
+   blob) for an ambient, unsynchronized feel rather than a uniform pulse. */
+.m-section { position: relative; }
+.m-section-inner { position: relative; z-index: 1; }
+.m-blob {
+  position: absolute; border-radius: 50%; filter: blur(2px);
+  z-index: 0; pointer-events: none;
+  animation: m-drift 20s ease-in-out infinite;
+}
+.m-blob.spin { animation: m-drift 20s ease-in-out infinite, m-spin 60s linear infinite; }
+.m-leaf-accent {
+  position: absolute; z-index: 0; color: var(--color-highlight); opacity: 0.35;
+  pointer-events: none; animation: m-sway 9s ease-in-out infinite;
+}
+.m-leaf-accent svg { width: 100%; height: 100%; display: block; }
+.m-ring-accent {
+  position: absolute; z-index: 0; border-radius: 50%; border: 2px dashed var(--color-accent);
+  opacity: 0.28; pointer-events: none; animation: m-drift 24s ease-in-out infinite reverse;
+}
+
+@keyframes m-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(18px, -16px) scale(1.04); }
+  66% { transform: translate(-16px, 12px) scale(0.97); }
+}
+@keyframes m-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes m-sway {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-blob, .m-blob.spin, .m-leaf-accent, .m-ring-accent,
+  [data-theme="material"] footer.ledger-rule::before,
+  [data-theme="material"] footer.ledger-rule::after {
+    animation: none;
+  }
+}
+
+/* ---------------- hero ---------------- */
+.m-hero { padding: 56px 0 40px; position: relative; overflow: hidden; }
+.m-hero-grid {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 300px 1fr; gap: 56px; align-items: center;
+}
+.m-arch-frame { width: 300px; height: 375px; position: relative; }
+.m-arch-clip {
+  width: 100%; height: 100%; position: relative;
+  border-radius: 150px 150px 12px 12px;
+  overflow: hidden;
+  border: 6px solid var(--color-surface-panel);
+}
+.m-branch {
+  position: absolute; color: var(--color-highlight); opacity: 0.55; width: 46px; height: 150px;
+}
+.m-branch.left { left: -34px; top: 30px; transform: scaleX(-1) rotate(8deg); }
+.m-branch.right { right: -34px; bottom: 10px; }
+
+.m-eyebrow {
+  font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--color-accent-deep); display: flex; align-items: center; gap: 8px; margin: 0 0 14px;
+}
+.m-eyebrow::before { content: ""; width: 22px; height: 1.5px; background: var(--color-accent); display: inline-block; }
+.m-hero-title {
+  font-family: var(--font-display); font-weight: 600; font-size: 2.7rem; line-height: 1.18;
+  margin: 0 0 18px; color: var(--color-ink);
+}
+.m-hero-title em { color: var(--color-accent-deep); font-style: italic; }
+.m-hero-sub { font-size: 1.14rem; line-height: 1.6; color: var(--color-ink-dim); max-width: 52ch; margin: 0 0 28px; }
+.m-btn-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-bottom: 22px; }
+.m-btn {
+  font-family: var(--font-body); font-weight: 700; font-size: 0.95rem;
+  padding: 13px 26px; border-radius: 999px; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.m-btn:hover { transform: translateY(-1px); }
+.m-btn-filled { background: var(--color-accent); color: #fffaf3; border: none; }
+.m-btn-outline { background: transparent; color: var(--color-accent-deep); border: 1.5px solid var(--color-accent); }
+.m-chip-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.m-chip {
+  font-family: var(--font-body); font-size: 0.82rem; font-weight: 700;
+  padding: 7px 14px; border-radius: 999px; background: var(--color-surface-soft);
+  color: var(--color-ink-dim); border: 1px solid var(--color-surface-line);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.m-chip.dot::before { content: ""; width: 7px; height: 7px; border-radius: 999px; background: var(--color-highlight); display: inline-block; }
+
+/* ---------------- sections ---------------- */
+.m-section { padding: 56px 0; }
+.m-section-head { margin-bottom: 30px; }
+.m-section-eyebrow {
+  font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--color-accent-deep); margin: 0 0 8px;
+}
+.m-section-head h2 { font-family: var(--font-display); font-weight: 600; font-size: 1.9rem; margin: 0; color: var(--color-ink); }
+
+/* ---------------- bio card ---------------- */
+.m-card {
+  background: var(--color-surface-panel); border-radius: 20px; border: 1px solid var(--color-surface-line);
+  padding: 32px 36px; position: relative;
+}
+.m-bio-quote { font-family: var(--font-display); font-size: 3rem; color: var(--color-accent); opacity: 0.35; line-height: 1; margin-bottom: -6px; }
+.m-bio-text { font-size: 1.12rem; line-height: 1.7; color: var(--color-ink); margin: 0; }
+
+.m-banner {
+  margin-top: 26px; border-radius: 20px; padding: 24px 28px;
+  background: color-mix(in srgb, var(--color-highlight) 16%, var(--color-surface-panel));
+  border: 1px solid color-mix(in srgb, var(--color-highlight) 35%, var(--color-surface-line));
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+}
+.m-banner-text .m-tag {
+  font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--color-highlight); display: block; margin-bottom: 6px; font-weight: 700;
+}
+.m-banner-text p { margin: 0; font-size: 1.02rem; color: var(--color-ink); max-width: 50ch; }
+
+/* ---------------- project cards ---------------- */
+.m-project-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+.m-project-card {
+  background: var(--color-surface-panel); border-radius: 18px; overflow: hidden;
+  border: 1px solid var(--color-surface-line);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.m-project-card:hover { transform: translateY(-3px); }
+.m-project-bar { height: 8px; }
+.m-project-bar.terracotta { background: var(--color-accent); }
+.m-project-bar.sage { background: var(--color-highlight); }
+.m-project-body { padding: 26px 26px 22px; }
+.m-project-kicker { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-ink-dim); margin-bottom: 8px; }
+.m-project-card h3 { font-family: var(--font-display); font-size: 1.3rem; margin: 0 0 10px; color: var(--color-ink); }
+.m-project-card p { font-size: 0.98rem; line-height: 1.6; color: var(--color-ink-dim); margin: 0 0 18px; }
+.m-project-link { font-weight: 700; font-size: 0.92rem; color: var(--color-accent-deep); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.m-project-link .m-icon-sm { transition: transform 0.15s ease; }
+.m-project-link:hover .m-icon-sm { transform: translateX(3px); }
+
+/* ---------------- experience stepper ---------------- */
+.m-stepper { position: relative; padding-left: 34px; }
+.m-stepper::before {
+  content: ""; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px;
+  background: var(--color-surface-line);
+}
+.m-step { position: relative; padding-bottom: 34px; }
+.m-step:last-child { padding-bottom: 0; }
+.m-step-dot {
+  position: absolute; left: -34px; top: 4px; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--color-accent); border: 3px solid var(--color-surface);
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+.m-step.current .m-step-dot { background: var(--color-highlight); box-shadow: 0 0 0 2px var(--color-highlight); }
+.m-step-card { background: var(--color-surface-panel); border: 1px solid var(--color-surface-line); border-radius: 16px; padding: 22px 24px; }
+.m-step-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+.m-step-years { font-family: var(--font-mono); font-size: 0.78rem; color: var(--color-ink-dim); }
+.m-step-current-badge {
+  font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em;
+  background: var(--color-highlight); color: var(--color-surface-panel); padding: 3px 9px; border-radius: 999px; font-weight: 700;
+}
+.m-step-card h3 { font-family: var(--font-display); font-size: 1.2rem; margin: 4px 0 2px; color: var(--color-ink); }
+.m-step-company { font-size: 0.92rem; color: var(--color-accent-deep); font-weight: 700; display: block; margin-bottom: 12px; }
+.m-step-card ul { margin: 0; padding-left: 18px; color: var(--color-ink-dim); font-size: 0.96rem; line-height: 1.55; }
+.m-step-card li { margin-bottom: 4px; }
+
+/* ---------------- off the clock ---------------- */
+.m-side-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.m-side-card { background: var(--color-surface-soft); border-radius: 16px; padding: 20px 22px; border: 1px dashed var(--color-surface-line); }
+.m-side-card h4 { font-family: var(--font-display); font-size: 1.05rem; margin: 0 0 8px; color: var(--color-ink); }
+.m-side-card p { font-size: 0.92rem; color: var(--color-ink-dim); line-height: 1.55; margin: 0; }
+
+/* ---------------- tech chips ---------------- */
+.m-specs-card { background: var(--color-surface-panel); border-radius: 20px; border: 1px solid var(--color-surface-line); padding: 30px 32px; }
+.m-specs-group { margin-bottom: 20px; }
+.m-specs-group:last-child { margin-bottom: 0; }
+.m-specs-label { font-family: var(--font-mono); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-ink-dim); margin-bottom: 10px; }
+.m-chip-cloud { display: flex; flex-wrap: wrap; gap: 9px; }
+.m-tech-chip { font-size: 0.86rem; font-weight: 600; padding: 7px 14px; border-radius: 999px; background: var(--color-surface-soft); color: var(--color-ink); border: 1px solid var(--color-surface-line); }
+
+@media (max-width: 860px) {
+  .m-hero-grid { grid-template-columns: 1fr; }
+  .m-arch-frame { width: 220px; height: 275px; margin: 0 auto; }
+  .m-hero-title { font-size: 2rem; }
+  .m-project-grid { grid-template-columns: 1fr; }
+  .m-side-grid { grid-template-columns: 1fr; }
+}

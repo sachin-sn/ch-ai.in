@@ -1,0 +1,279 @@
+import { App, TerraformStack, TerraformOutput } from "cdktf";
+import { Construct } from "constructs";
+import { AwsProvider } from "@cdktf/provider-aws/lib/provider";
+import { DataAwsCallerIdentity } from "@cdktf/provider-aws/lib/data-aws-caller-identity";
+import { S3Bucket } from "@cdktf/provider-aws/lib/s3-bucket";
+import { S3BucketVersioningA } from "@cdktf/provider-aws/lib/s3-bucket-versioning";
+import { S3BucketServerSideEncryptionConfigurationA } from "@cdktf/provider-aws/lib/s3-bucket-server-side-encryption-configuration";
+import { S3BucketPublicAccessBlock } from "@cdktf/provider-aws/lib/s3-bucket-public-access-block";
+import { DynamodbTable } from "@cdktf/provider-aws/lib/dynamodb-table";
+import { IamOpenidConnectProvider } from "@cdktf/provider-aws/lib/iam-openid-connect-provider";
+import { IamRole } from "@cdktf/provider-aws/lib/iam-role";
+import { IamRolePolicy } from "@cdktf/provider-aws/lib/iam-role-policy";
+import { DataAwsIamPolicyDocument } from "@cdktf/provider-aws/lib/data-aws-iam-policy-document";
+
+// Update this if the repo is ever renamed or transferred — the trust policy
+// below only lets tokens minted for *this* repo assume the deploy role.
+const GITHUB_REPO = "sachin-sn/ch-ai.in";
+
+// Must match the AwsProvider region in code/infra/main.ts — the state
+// bucket and lock table live alongside everything else this deploys.
+const AWS_REGION = "ap-south-1";
+
+// Must match the bucket name StaticSite creates in code/infra/static-site.ts
+// (currently `${domainName.replace(/\./g, "-")}-site"`, i.e. "ch-ai-in-site").
+// Hardcoded here (rather than imported) because this is a separate CDKTF
+// app with its own state — there's nothing to cross-reference against.
+const SITE_BUCKET_NAME = "ch-ai-in-site";
+
+// GitHub's own thumbprint verification is no longer enforced by AWS for
+// this specific OIDC endpoint (AWS validates against its own trusted root
+// list instead), but the Terraform resource still requires a non-empty
+// list. This is the widely-documented value; its exact bytes don't matter.
+const GITHUB_OIDC_THUMBPRINT = "6938fd4d98bab03faadb97b34396831e3780aea1";
+
+/**
+ * One-time, hand-run bootstrap stack. It creates the things the *main*
+ * stack (code/infra) needs before it can be driven from CI:
+ *
+ *   1. An S3 bucket + DynamoDB table for Terraform's remote state, so
+ *      GitHub Actions and your laptop share the same source of truth
+ *      instead of each having their own local .tfstate.
+ *   2. An IAM OIDC provider + role that GitHub Actions can assume via
+ *      short-lived tokens — no AWS access keys stored as GitHub secrets.
+ *
+ * This stack deliberately keeps its OWN local state (it has no backend
+ * configured). It can't manage the bucket it creates for the *other*
+ * stack's backend without a chicken-and-egg problem, and in practice you
+ * run this once, maybe touch it again if permissions need widening — it
+ * doesn't belong in the CI loop the way the main stack does.
+ */
+class BootstrapStack extends TerraformStack {
+  constructor(scope: Construct, id: string) {
+    super(scope, id);
+
+    new AwsProvider(this, "aws", {
+      region: AWS_REGION,
+    });
+
+    const current = new DataAwsCallerIdentity(this, "current");
+
+    // ---------------------------------------------------------------
+    // 1. Remote state bucket + lock table.
+    //    Bucket names are global across all of AWS, so the account ID
+    //    is folded in to keep this collision-free without you having to
+    //    pick a unique name yourself.
+    // ---------------------------------------------------------------
+    const stateBucket = new S3Bucket(this, "tf-state", {
+      bucket: `ch-ai-in-tfstate-${current.accountId}`,
+    });
+
+    new S3BucketVersioningA(this, "tf-state-versioning", {
+      bucket: stateBucket.id,
+      versioningConfiguration: {
+        status: "Enabled",
+      },
+    });
+
+    new S3BucketServerSideEncryptionConfigurationA(this, "tf-state-encryption", {
+      bucket: stateBucket.id,
+      rule: [
+        {
+          applyServerSideEncryptionByDefault: {
+            sseAlgorithm: "AES256",
+          },
+        },
+      ],
+    });
+
+    new S3BucketPublicAccessBlock(this, "tf-state-block", {
+      bucket: stateBucket.id,
+      blockPublicAcls: true,
+      blockPublicPolicy: true,
+      ignorePublicAcls: true,
+      restrictPublicBuckets: true,
+    });
+
+    const lockTable = new DynamodbTable(this, "tf-lock", {
+      name: "ch-ai-in-tfstate-lock",
+      billingMode: "PAY_PER_REQUEST",
+      hashKey: "LockID",
+      attribute: [{ name: "LockID", type: "S" }],
+    });
+
+    // ---------------------------------------------------------------
+    // 2. GitHub OIDC provider + a role scoped to this one repo.
+    //    If your AWS account already has a token.actions.githubusercontent.com
+    //    provider from a previous project, this resource will fail with
+    //    "EntityAlreadyExists" — see the README for how to import the
+    //    existing one instead of creating a second.
+    // ---------------------------------------------------------------
+    const githubOidc = new IamOpenidConnectProvider(this, "github-oidc", {
+      url: "https://token.actions.githubusercontent.com",
+      clientIdList: ["sts.amazonaws.com"],
+      thumbprintList: [GITHUB_OIDC_THUMBPRINT],
+    });
+
+    // Trust policy: only workflow runs from this exact repo can assume the
+    // role — pushes to main (for real deploys) and pull requests (for
+    // read-only `diff`/`plan` runs). Nothing else, no other repo, no other
+    // branch, can mint a token this role will accept.
+    const trustPolicy = new DataAwsIamPolicyDocument(this, "trust-policy", {
+      statement: [
+        {
+          effect: "Allow",
+          principals: [
+            {
+              type: "Federated",
+              identifiers: [githubOidc.arn],
+            },
+          ],
+          actions: ["sts:AssumeRoleWithWebIdentity"],
+          condition: [
+            {
+              test: "StringEquals",
+              variable: "token.actions.githubusercontent.com:aud",
+              values: ["sts.amazonaws.com"],
+            },
+            {
+              test: "StringLike",
+              variable: "token.actions.githubusercontent.com:sub",
+              values: [
+                `repo:${GITHUB_REPO}:ref:refs/heads/main`,
+                `repo:${GITHUB_REPO}:pull_request`,
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const deployRole = new IamRole(this, "gh-actions-deploy-role", {
+      name: "ch-ai-in-github-actions-deploy",
+      assumeRolePolicy: trustPolicy.json,
+      description:
+        "Assumed by GitHub Actions (OIDC) in " +
+        GITHUB_REPO +
+        " to deploy the ch-ai.in site and infra.",
+    });
+
+    // Least-privilege-ish permissions: scoped to the specific state
+    // bucket/table and the specific site bucket by ARN. CloudFront, ACM
+    // and Route 53 don't support resource-level ARN scoping for the
+    // actions used here, so those three sections use "*" — standard
+    // practice for these services, not a shortcut taken for convenience.
+    const permissions = new DataAwsIamPolicyDocument(this, "deploy-permissions", {
+      statement: [
+        {
+          sid: "TerraformStateBucket",
+          effect: "Allow",
+          actions: ["s3:GetObject", "s3:PutObject", "s3:ListBucket"],
+          resources: [stateBucket.arn, `${stateBucket.arn}/*`],
+        },
+        {
+          sid: "TerraformLockTable",
+          effect: "Allow",
+          actions: ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:DeleteItem"],
+          resources: [lockTable.arn],
+        },
+        {
+          sid: "SiteBucket",
+          effect: "Allow",
+          actions: [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:DeleteObject",
+            "s3:ListBucket",
+            "s3:GetBucketLocation",
+            "s3:GetBucketPolicy",
+            "s3:PutBucketPolicy",
+            "s3:GetBucketPublicAccessBlock",
+            "s3:PutBucketPublicAccessBlock",
+            "s3:CreateBucket",
+            "s3:PutEncryptionConfiguration",
+            "s3:PutLifecycleConfiguration",
+            "s3:GetLifecycleConfiguration",
+          ],
+          resources: [
+            `arn:aws:s3:::${SITE_BUCKET_NAME}`,
+            `arn:aws:s3:::${SITE_BUCKET_NAME}/*`,
+          ],
+        },
+        {
+          sid: "CloudFront",
+          effect: "Allow",
+          actions: [
+            "cloudfront:CreateDistribution",
+            "cloudfront:GetDistribution",
+            "cloudfront:UpdateDistribution",
+            "cloudfront:DeleteDistribution",
+            "cloudfront:TagResource",
+            "cloudfront:ListTagsForResource",
+            "cloudfront:CreateInvalidation",
+            "cloudfront:GetInvalidation",
+            "cloudfront:ListInvalidations",
+            "cloudfront:CreateOriginAccessControl",
+            "cloudfront:GetOriginAccessControl",
+            "cloudfront:UpdateOriginAccessControl",
+            "cloudfront:DeleteOriginAccessControl",
+          ],
+          resources: ["*"],
+        },
+        {
+          sid: "AcmCertUsEast1",
+          effect: "Allow",
+          actions: [
+            "acm:RequestCertificate",
+            "acm:DescribeCertificate",
+            "acm:DeleteCertificate",
+            "acm:AddTagsToCertificate",
+            "acm:ListTagsForCertificate",
+          ],
+          resources: ["*"],
+        },
+        {
+          sid: "Route53HostedZone",
+          effect: "Allow",
+          actions: [
+            "route53:CreateHostedZone",
+            "route53:DeleteHostedZone",
+            "route53:GetHostedZone",
+            "route53:ListHostedZones",
+            "route53:ChangeResourceRecordSets",
+            "route53:ListResourceRecordSets",
+            "route53:GetChange",
+            "route53:ChangeTagsForResource",
+            "route53:ListTagsForResource",
+          ],
+          resources: ["*"],
+        },
+      ],
+    });
+
+    new IamRolePolicy(this, "gh-actions-deploy-policy", {
+      name: "ch-ai-in-deploy-permissions",
+      role: deployRole.id,
+      policy: permissions.json,
+    });
+
+    new TerraformOutput(this, "deploy_role_arn", {
+      value: deployRole.arn,
+      description:
+        "Set this as the AWS_DEPLOY_ROLE_ARN variable in the GitHub repo (Settings > Secrets and variables > Actions > Variables).",
+    });
+
+    new TerraformOutput(this, "state_bucket_name", {
+      value: stateBucket.bucket,
+      description: "Set as TF_STATE_BUCKET, and use it in code/infra/main.ts's S3Backend block.",
+    });
+
+    new TerraformOutput(this, "state_lock_table_name", {
+      value: lockTable.name,
+      description: "Set as TF_STATE_LOCK_TABLE, and use it in code/infra/main.ts's S3Backend block.",
+    });
+  }
+}
+
+const app = new App();
+new BootstrapStack(app, "ch-ai-bootstrap");
+app.synth();
