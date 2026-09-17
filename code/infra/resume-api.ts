@@ -135,13 +135,21 @@ export class ResumeApi extends Construct {
 
     // ---------------------------------------------------------------
     // 4. The function itself. Code is bundled ahead of time --
-    //    `npm run build` in ../lambda/resume-api produces dist/, which
-    //    this zips up as a content-hashed Terraform asset so a deploy
-    //    only replaces the function when the bundle actually changed.
+    //    `npm run build` in ../lambda/resume-api produces dist/handler.js
+    //    and then zips it to dist.zip itself (via the `zip` CLI). We point
+    //    this at that pre-built zip as a plain FILE asset rather than
+    //    letting cdktf's TerraformAsset(AssetType.ARCHIVE) zip the
+    //    directory itself -- cdktf shells out to node + the `archiver`
+    //    package for that, and it reliably produces a truncated zip
+    //    (missing end-of-central-directory record) on Node 20/22, which
+    //    AWS then rejects with "Could not unzip uploaded file". Using a
+    //    FILE asset still content-hashes the zip so a deploy only
+    //    replaces the function when the bundle actually changed, it just
+    //    skips cdktf's own (buggy) zipping step.
     // ---------------------------------------------------------------
     const asset = new TerraformAsset(this, "lambda-code", {
-      path: path.resolve(__dirname, "../lambda/resume-api/dist"),
-      type: AssetType.ARCHIVE,
+      path: path.resolve(__dirname, "../lambda/resume-api/dist.zip"),
+      type: AssetType.FILE,
     });
 
     const fn = new LambdaFunction(this, "function", {
