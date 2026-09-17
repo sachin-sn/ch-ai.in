@@ -361,6 +361,7 @@ class BootstrapStack extends TerraformStack {
             "lambda:CreateFunction",
             "lambda:GetFunction",
             "lambda:GetFunctionCodeSigningConfig",
+            "lambda:ListVersionsByFunction",
             "lambda:UpdateFunctionCode",
             "lambda:UpdateFunctionConfiguration",
             "lambda:DeleteFunction",
