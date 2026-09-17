@@ -17,6 +17,13 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    // Without this, tsc auto-includes every @types/* package visible in any
+    // ancestor node_modules (TS's ambient-types behavior when "types" isn't
+    // explicitly restricted) -- which pulls in ../node_modules/@types/react-dom
+    // from the Next.js app one level up and fails on its DOM-lib types, even
+    // though nothing here touches React. Pre-existing gap, unrelated to any
+    // one file; this is the standard fix.
+    "skipLibCheck": true,
     "target": "ES2019",
     "lib": ["ES2019"],
     "outDir": "dist",

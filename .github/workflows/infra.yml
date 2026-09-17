@@ -1,15 +1,20 @@
 name: Infra (CDKTF)
 
-# Deploys code/infra — the Route53 zone, ACM cert, S3 bucket and CloudFront
-# distribution ch-ai.in runs on. A pull request only ever gets a read-only
-# `cdktf diff`; an actual `cdktf deploy` only happens on push to main, and
-# even then it pauses for manual approval via the `production` environment
-# below, because this stack can touch DNS and the CDN in front of a live
-# domain.
+# Deploys code/infra — the Route53 zone, ACM cert, S3 bucket, CloudFront
+# distribution, and (as of the resume-request feature) the resume-api
+# Lambda + DynamoDB table ch-ai.in runs on. A pull request only ever gets
+# a read-only `cdktf diff`; an actual `cdktf deploy` only happens on push
+# to main, and even then it pauses for manual approval via the
+# `production` environment below, because this stack can touch DNS and
+# the CDN in front of a live domain.
 #
-# One-time setup this workflow depends on — see code/infra-bootstrap/README.md:
+# One-time setup this workflow depends on — see code/infra-bootstrap/README.md
+# and DEPLOYMENT.md:
 #   - AWS_DEPLOY_ROLE_ARN, AWS_REGION, TF_STATE_BUCKET, TF_STATE_LOCK_TABLE
 #     repo variables (Settings > Secrets and variables > Actions > Variables)
+#   - TURNSTILE_SECRET_KEY, RESUME_ORIGIN_VERIFY_SECRET repo SECRETS (not
+#     variables — these are sensitive, unlike everything above) feeding the
+#     resume-api Lambda's Terraform variables
 #   - a `production` GitHub Environment with a required reviewer
 #   - code/infra/main.ts pointed at the real state bucket/table names
 #     (S3Backend currently has REPLACE_WITH_* placeholders)
@@ -18,11 +23,13 @@ on:
   pull_request:
     paths:
       - "code/infra/**"
+      - "code/lambda/**"
       - ".github/workflows/infra.yml"
   push:
     branches: [main]
     paths:
       - "code/infra/**"
+      - "code/lambda/**"
       - ".github/workflows/infra.yml"
   workflow_dispatch: {}
 
@@ -30,10 +37,6 @@ permissions:
   id-token: write # required to assume the AWS role via OIDC
   contents: read
   pull-requests: write # lets the plan job comment the diff on the PR
-
-defaults:
-  run:
-    working-directory: code/infra
 
 concurrency:
   group: infra-${{ github.workflow }}
@@ -44,6 +47,9 @@ jobs:
     if: github.event_name == 'pull_request'
     name: cdktf diff
     runs-on: ubuntu-latest
+    env:
+      TF_VAR_turnstile_secret_key: ${{ secrets.TURNSTILE_SECRET_KEY }}
+      TF_VAR_origin_verify_secret: ${{ secrets.RESUME_ORIGIN_VERIFY_SECRET }}
     steps:
       - uses: actions/checkout@v4
 
@@ -51,14 +57,24 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-          cache-dependency-path: code/infra/package-lock.json
+          cache-dependency-path: |
+            code/infra/package-lock.json
+            code/lambda/resume-api/package-lock.json
 
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.16.3"
           terraform_wrapper: false
 
-      - run: npm ci
+      - name: Build resume-api Lambda bundle
+        working-directory: code/lambda/resume-api
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install infra dependencies
+        working-directory: code/infra
+        run: npm ci
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -67,6 +83,7 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: cdktf diff
+        working-directory: code/infra
         run: npx cdktf diff ch-ai-portfolio
 
   deploy:
@@ -74,6 +91,9 @@ jobs:
     name: cdktf deploy
     runs-on: ubuntu-latest
     environment: production # requires manual approval — see repo Settings > Environments
+    env:
+      TF_VAR_turnstile_secret_key: ${{ secrets.TURNSTILE_SECRET_KEY }}
+      TF_VAR_origin_verify_secret: ${{ secrets.RESUME_ORIGIN_VERIFY_SECRET }}
     steps:
       - uses: actions/checkout@v4
 
@@ -81,14 +101,24 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-          cache-dependency-path: code/infra/package-lock.json
+          cache-dependency-path: |
+            code/infra/package-lock.json
+            code/lambda/resume-api/package-lock.json
 
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.16.3"
           terraform_wrapper: false
 
-      - run: npm ci
+      - name: Build resume-api Lambda bundle
+        working-directory: code/lambda/resume-api
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install infra dependencies
+        working-directory: code/infra
+        run: npm ci
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -97,4 +127,5 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: cdktf deploy
+        working-directory: code/infra
         run: npx cdktf deploy ch-ai-portfolio --auto-approve

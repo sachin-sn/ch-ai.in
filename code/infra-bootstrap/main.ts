@@ -37,6 +37,15 @@ const AWS_REGION = "ap-south-1";
 // app with its own state — there's nothing to cross-reference against.
 const SITE_BUCKET_NAME = "ch-ai-in-site";
 
+// Resource names created by code/infra/resume-api.ts — same reasoning as
+// SITE_BUCKET_NAME above: hardcoded because this is a separate CDKTF app
+// with no way to reference the other stack's resources directly.
+const RESUME_BUCKET_NAME = "ch-ai-in-resume-assets";
+const RESUME_TABLE_NAME = "ch-ai-in-resume-requests";
+const RESUME_FUNCTION_NAME = "ch-ai-in-resume-api";
+const RESUME_LAMBDA_ROLE_NAME = "ch-ai-in-resume-api-lambda";
+const RESUME_LOG_GROUP_NAME = `/aws/lambda/${RESUME_FUNCTION_NAME}`;
+
 // GitHub's own thumbprint verification is no longer enforced by AWS for
 // this specific OIDC endpoint (AWS validates against its own trusted root
 // list instead), but the Terraform resource still requires a non-empty
@@ -218,7 +227,6 @@ class BootstrapStack extends TerraformStack {
             // aws_s3_bucket resource, to detect drift on settings this
             // stack never actually configures (ACL, CORS, website hosting,
             // versioning, logging, tags, replication, object lock,
-            // request payment, transfer acceleration). None of them widen
             // what this role can change — they're the same lesson as the
             // DynamoDB DescribeContinuousBackups/DescribeTimeToLive gap:
             // Terraform reads back far more than a resource's own config
@@ -242,6 +250,148 @@ class BootstrapStack extends TerraformStack {
           resources: [
             `arn:aws:s3:::${SITE_BUCKET_NAME}`,
             `arn:aws:s3:::${SITE_BUCKET_NAME}/*`,
+          ],
+        },
+        // -----------------------------------------------------------
+        // Everything below this line was added for the resume-request
+        // API (code/infra/resume-api.ts) — the site's first dynamic
+        // backend. Every ARN is scoped to the one specific resource
+        // that construct creates; nothing here is broader than what
+        // that one Lambda needs to exist.
+        // -----------------------------------------------------------
+        {
+          sid: "ResumeAssetBucket",
+          effect: "Allow",
+          // Same action list as SiteBucket above, same reasoning: Terraform
+          // reads back far more per-bucket state than this stack sets.
+          actions: [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:DeleteObject",
+            "s3:ListBucket",
+            "s3:GetBucketLocation",
+            "s3:GetBucketPolicy",
+            "s3:PutBucketPolicy",
+            "s3:GetBucketPublicAccessBlock",
+            "s3:PutBucketPublicAccessBlock",
+            "s3:CreateBucket",
+            "s3:PutEncryptionConfiguration",
+            "s3:GetEncryptionConfiguration",
+            "s3:PutLifecycleConfiguration",
+            "s3:GetLifecycleConfiguration",
+            "s3:GetBucketAcl",
+            "s3:GetBucketCors",
+            "s3:GetBucketWebsite",
+            "s3:GetBucketVersioning",
+            "s3:GetBucketLogging",
+            "s3:GetBucketTagging",
+            "s3:GetReplicationConfiguration",
+            "s3:GetBucketObjectLockConfiguration",
+            "s3:GetBucketRequestPayment",
+            "s3:GetAccelerateConfiguration",
+            "s3:GetObjectTagging",
+            "s3:GetObjectAcl",
+          ],
+          resources: [
+            `arn:aws:s3:::${RESUME_BUCKET_NAME}`,
+            `arn:aws:s3:::${RESUME_BUCKET_NAME}/*`,
+          ],
+        },
+        {
+          sid: "ResumeTelemetryTable",
+          effect: "Allow",
+          actions: [
+            "dynamodb:CreateTable",
+            "dynamodb:DeleteTable",
+            "dynamodb:DescribeTable",
+            "dynamodb:UpdateTable",
+            "dynamodb:TagResource",
+            "dynamodb:UntagResource",
+            "dynamodb:ListTagsOfResource",
+            // Terraform's refresh reads these back unconditionally, same
+            // gap as the tfstate lock table (see DEPLOYMENT.md).
+            "dynamodb:DescribeContinuousBackups",
+            "dynamodb:UpdateContinuousBackups",
+            "dynamodb:DescribeTimeToLive",
+            "dynamodb:UpdateTimeToLive",
+          ],
+          resources: [
+            `arn:aws:dynamodb:${AWS_REGION}:${current.accountId}:table/${RESUME_TABLE_NAME}`,
+          ],
+        },
+        {
+          sid: "ResumeLambdaExecutionRole",
+          effect: "Allow",
+          actions: [
+            "iam:CreateRole",
+            "iam:DeleteRole",
+            "iam:GetRole",
+            "iam:PutRolePolicy",
+            "iam:DeleteRolePolicy",
+            "iam:GetRolePolicy",
+            "iam:ListRolePolicies",
+            "iam:ListAttachedRolePolicies",
+            "iam:ListInstanceProfilesForRole",
+            "iam:TagRole",
+            "iam:UntagRole",
+          ],
+          resources: [`arn:aws:iam::${current.accountId}:role/${RESUME_LAMBDA_ROLE_NAME}`],
+        },
+        {
+          // iam:PassRole is the classic privilege-escalation footgun: it
+          // must name this ONE role and nothing else, or a compromised
+          // deploy role could hand the Lambda a role with much broader
+          // permissions than it's supposed to have.
+          sid: "PassResumeLambdaRoleToLambda",
+          effect: "Allow",
+          actions: ["iam:PassRole"],
+          resources: [`arn:aws:iam::${current.accountId}:role/${RESUME_LAMBDA_ROLE_NAME}`],
+          condition: [
+            {
+              test: "StringEquals",
+              variable: "iam:PassedToService",
+              values: ["lambda.amazonaws.com"],
+            },
+          ],
+        },
+        {
+          sid: "ResumeApiLambda",
+          effect: "Allow",
+          actions: [
+            "lambda:CreateFunction",
+            "lambda:GetFunction",
+            "lambda:GetFunctionCodeSigningConfig",
+            "lambda:UpdateFunctionCode",
+            "lambda:UpdateFunctionConfiguration",
+            "lambda:DeleteFunction",
+            "lambda:TagResource",
+            "lambda:UntagResource",
+            "lambda:ListTags",
+            "lambda:GetPolicy",
+            "lambda:AddPermission",
+            "lambda:RemovePermission",
+            "lambda:CreateFunctionUrlConfig",
+            "lambda:GetFunctionUrlConfig",
+            "lambda:UpdateFunctionUrlConfig",
+            "lambda:DeleteFunctionUrlConfig",
+          ],
+          resources: [`arn:aws:lambda:${AWS_REGION}:${current.accountId}:function:${RESUME_FUNCTION_NAME}`],
+        },
+        {
+          sid: "ResumeApiLogGroup",
+          effect: "Allow",
+          actions: [
+            "logs:CreateLogGroup",
+            "logs:DeleteLogGroup",
+            "logs:DescribeLogGroups",
+            "logs:PutRetentionPolicy",
+            "logs:TagResource",
+            "logs:UntagResource",
+            "logs:ListTagsForResource",
+          ],
+          resources: [
+            `arn:aws:logs:${AWS_REGION}:${current.accountId}:log-group:${RESUME_LOG_GROUP_NAME}`,
+            `arn:aws:logs:${AWS_REGION}:${current.accountId}:log-group:${RESUME_LOG_GROUP_NAME}:*`,
           ],
         },
         {

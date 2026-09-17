@@ -94,6 +94,93 @@ console or `npx cdktf output` in `code/infra`, then set it as the
 until it's set, deploys still sync to S3, they just skip the invalidation
 step (and say so in the workflow log).
 
+## Resume-request feature: additional one-time setup
+
+The `/resume` page gates the resume download behind an email form, backed
+by a new Lambda (`code/lambda/resume-api`) that CloudFront routes to at
+`/api/resume/*` (see `code/infra/resume-api.ts` and the "Decisions made"
+notes it links back to). This added a second dynamic piece to an
+otherwise fully static site, so it needs a few things the original setup
+above doesn't cover.
+
+### 1. Generate the origin-verify secret
+
+This is the shared secret CloudFront injects as a header on every request
+it sends to the resume-api Lambda, so the Lambda can reject anything that
+reached its Function URL some other way (Lambda Function URLs have no
+equivalent of S3's origin-access-control). Generate one and keep it safe:
+
+```bash
+openssl rand -hex 32
+```
+
+### 2. Create a Cloudflare Turnstile widget
+
+Turnstile is the captcha used to keep the form from being scraped. In the
+[Cloudflare dashboard](https://dash.cloudflare.com/) → Turnstile → Add
+site, create a widget for `ch-ai.in`. You'll get two values:
+
+- A **site key** — public, safe to ship in client-side code.
+- A **secret key** — used server-side by the Lambda to verify tokens; treat
+  it like a password.
+
+### 3. Upload the resume PDF
+
+`code/infra/resume-api.ts` creates a dedicated private bucket for this
+(kept separate from the site bucket on purpose — see the comments in that
+file). After the first `cdktf deploy` of this feature, upload the resume:
+
+```bash
+aws s3 cp /path/to/resume.pdf s3://<resume_bucket_name output>/sachin-nagaraja-resume.pdf
+```
+
+(`resume_bucket_name` is a `cdktf output` from `code/infra` — matches the
+`RESUME_OBJECT_KEY` constant in `code/infra/main.ts`, currently
+`sachin-nagaraja-resume.pdf`, if you rename the file, update that constant.)
+
+### 4. Re-run infra-bootstrap once, locally
+
+The GitHub Actions deploy role's permissions were widened to allow
+creating the new Lambda, its execution role, the DynamoDB table, and the
+resume bucket (all narrowly scoped to those specific resources — see the
+`Resume*` policy statements in `code/infra-bootstrap/main.ts`). This
+change has to be applied once, locally, the same way the original
+bootstrap was:
+
+```bash
+cd code/infra-bootstrap
+npm install
+npm run deploy
+```
+
+### 5. Set the new GitHub repo secrets and variables
+
+Settings → Secrets and variables → Actions:
+
+| Type | Name | Value |
+|---|---|---|
+| Secret | `TURNSTILE_SECRET_KEY` | Turnstile secret key from step 2 |
+| Secret | `RESUME_ORIGIN_VERIFY_SECRET` | value from step 1 |
+| Variable | `TURNSTILE_SITE_KEY` | Turnstile site key from step 2 |
+
+The two secrets feed `code/infra/main.ts`'s `TerraformVariable`s
+(`turnstile_secret_key`, `origin_verify_secret`) as `TF_VAR_*` env vars in
+`infra.yml`. The variable feeds `NEXT_PUBLIC_TURNSTILE_SITE_KEY` at build
+time in `app-deploy.yml` — it's public, so a plain repo variable is fine,
+unlike the two secrets above.
+
+To run `cdktf diff`/`deploy` locally instead of through CI, export the
+same two values as `TF_VAR_turnstile_secret_key` and
+`TF_VAR_origin_verify_secret` in your shell first.
+
+### 6. Deploy
+
+Push to `main` as usual — `infra.yml` builds the Lambda bundle and applies
+the new resources (behind the same manual-approval gate as any other infra
+change), then `app-deploy.yml` picks up the new `/resume` page on its next
+run. Do step 3 (upload the resume) after the first successful infra
+deploy, since the bucket doesn't exist until then.
+
 ## Everyday use after that
 
 - Change something under `code/app` (or components/lib/public/themes) and
