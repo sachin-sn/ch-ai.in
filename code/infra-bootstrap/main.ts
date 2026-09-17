@@ -384,7 +384,6 @@ class BootstrapStack extends TerraformStack {
           actions: [
             "logs:CreateLogGroup",
             "logs:DeleteLogGroup",
-            "logs:DescribeLogGroups",
             "logs:PutRetentionPolicy",
             "logs:TagResource",
             "logs:UntagResource",
@@ -394,6 +393,26 @@ class BootstrapStack extends TerraformStack {
             `arn:aws:logs:${AWS_REGION}:${current.accountId}:log-group:${RESUME_LOG_GROUP_NAME}`,
             `arn:aws:logs:${AWS_REGION}:${current.accountId}:log-group:${RESUME_LOG_GROUP_NAME}:*`,
           ],
+        },
+        {
+          // logs:DescribeLogGroups doesn't support resource-level scoping --
+          // confirmed by hitting this for real: Terraform's refresh of
+          // aws_cloudwatch_log_group calls it, and AWS denied it even
+          // against the specific log-group ARN above, because it evaluates
+          // this action against a generic account-wide resource context
+          // (AWS's own docs describe it as "required to view all log
+          // groups associated with the account"), not the log group being
+          // read. This is a read-only list action -- it lets you see log
+          // group names/metadata across the account, nothing more -- so a
+          // "*" resource here is the standard, AWS-recommended shape for
+          // this one action, same as e.g. s3:ListAllMyBuckets always needs
+          // account-wide scope. Everything that operates ON a specific log
+          // group (create/delete/tag/retention above) stays narrowly
+          // scoped as before.
+          sid: "ResumeApiLogGroupDescribe",
+          effect: "Allow",
+          actions: ["logs:DescribeLogGroups"],
+          resources: ["*"],
         },
         {
           sid: "CloudFront",
