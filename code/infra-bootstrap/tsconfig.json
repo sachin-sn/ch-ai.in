@@ -17,6 +17,10 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    // See code/infra/tsconfig.json for why this is needed: ambient @types
+    // auto-inclusion otherwise pulls in ../node_modules/@types/react-dom
+    // from the Next.js app and fails on unrelated DOM-lib types.
+    "skipLibCheck": true,
     "target": "ES2019",
     "lib": ["ES2019"],
     "outDir": "dist",

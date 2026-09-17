@@ -7,8 +7,11 @@ name: Deploy site
 #
 # Requires these repo variables (Settings > Secrets and variables > Actions
 # > Variables), set once after the infra bootstrap + first infra deploy —
-# see code/infra-bootstrap/README.md:
+# see code/infra-bootstrap/README.md and DEPLOYMENT.md:
 #   AWS_DEPLOY_ROLE_ARN, AWS_REGION, S3_SITE_BUCKET, CLOUDFRONT_DISTRIBUTION_ID
+#   TURNSTILE_SITE_KEY (public Cloudflare Turnstile site key, baked into the
+#   static export as NEXT_PUBLIC_TURNSTILE_SITE_KEY — safe as a plain
+#   variable, unlike the matching secret key used server-side in infra.yml)
 
 on:
   push:
@@ -57,6 +60,8 @@ jobs:
       - run: npm run lint
 
       - name: Build static export
+        env:
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
         run: npm run build
 
       - name: Configure AWS credentials

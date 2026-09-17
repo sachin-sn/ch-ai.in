@@ -1,9 +1,11 @@
-import { App, TerraformStack, TerraformOutput, S3Backend } from "cdktf";
+import { App, TerraformStack, TerraformOutput, TerraformVariable, S3Backend } from "cdktf";
 import { Construct } from "constructs";
 import { AwsProvider } from "@cdktf/provider-aws/lib/provider";
 import { StaticSite } from "./static-site";
+import { ResumeApi } from "./resume-api";
 
 const DOMAIN_NAME = "ch-ai.in";
+const RESUME_OBJECT_KEY = "sachin-nagaraja-resume.pdf";
 
 class PortfolioStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
@@ -42,9 +44,39 @@ class PortfolioStack extends TerraformStack {
       region: "us-east-1",
     });
 
+    // Two secrets the resume-request API needs, supplied at synth/deploy
+    // time as TF_VAR_turnstile_secret_key / TF_VAR_origin_verify_secret
+    // (GitHub Actions secrets in CI, a local env var for you) — never
+    // hardcoded in source or committed anywhere. See DEPLOYMENT.md for
+    // where each value comes from and how to generate origin_verify_secret.
+    const turnstileSecretKey = new TerraformVariable(this, "turnstile_secret_key", {
+      type: "string",
+      sensitive: true,
+      description: "Cloudflare Turnstile secret key, from the Turnstile dashboard.",
+    });
+
+    const originVerifySecret = new TerraformVariable(this, "origin_verify_secret", {
+      type: "string",
+      sensitive: true,
+      description:
+        "Random shared secret CloudFront injects as a header when calling the resume-api Lambda, so the Lambda can reject requests that didn't come through CloudFront. Generate once with: openssl rand -hex 32",
+    });
+
+    const resumeApi = new ResumeApi(this, "resume-api", {
+      domainName: DOMAIN_NAME,
+      turnstileSecretKey: turnstileSecretKey.value,
+      originVerifySecret: originVerifySecret.value,
+      resumeObjectKey: RESUME_OBJECT_KEY,
+    });
+
     const site = new StaticSite(this, "portfolio", {
       domainName: DOMAIN_NAME,
       usEast1Provider: usEast1,
+      apiOrigin: {
+        domainName: resumeApi.functionUrlDomain,
+        originVerifySecret: originVerifySecret.value,
+        pathPattern: "/api/resume/*",
+      },
     });
 
     new TerraformOutput(this, "name_servers", {

@@ -17,6 +17,28 @@ import { CloudfrontDistribution } from "@cdktf/provider-aws/lib/cloudfront-distr
 // block on a cache behavior still works but is deprecated by AWS.
 const CACHING_OPTIMIZED_POLICY_ID = "658327ea-f89d-4fab-a63d-7e88639e58f6";
 
+// AWS's managed "CachingDisabled" policy — used for the /api/resume/*
+// behavior below. A resume-request POST is never a candidate for CDN
+// caching, and disabling it outright is simpler and safer than trying to
+// keep a TTL-based policy from ever accidentally serving a cached response
+// (or presigned URL!) to the wrong visitor.
+const CACHING_DISABLED_POLICY_ID = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad";
+
+// AWS's managed "AllViewer" origin request policy — forwards all viewer
+// headers (except Host), query strings, and cookies to the origin. Needed
+// so the Lambda origin actually receives the POST body, Content-Type, and
+// the CloudFront-Viewer-Country header the handler reads.
+const ALL_VIEWER_ORIGIN_REQUEST_POLICY_ID = "216adef6-5c7f-47e4-b989-5492eafa07d3";
+
+export interface StaticSiteApiOriginProps {
+  /** Bare hostname (no scheme) of the Lambda Function URL backing this behavior. */
+  domainName: string;
+  /** Shared secret injected as a custom header on every request CloudFront sends to this origin (see resume-api.ts). */
+  originVerifySecret: string;
+  /** Path pattern this behavior matches, e.g. "/api/resume/*". */
+  pathPattern: string;
+}
+
 export interface StaticSiteProps {
   /** The apex domain, e.g. "ch-ai.in". No "www." variant is set up here —
    * see the README for how to extend this if you want one later. */
@@ -25,6 +47,11 @@ export interface StaticSiteProps {
    * region the rest of the stack deploys to, so the caller passes in a
    * second, region-pinned provider instance for this one resource. */
   usEast1Provider: AwsProvider;
+  /** Optional second origin (a Lambda Function URL) routed by path pattern
+   * alongside the S3 origin, so a dynamic endpoint like the resume-request
+   * API can live on the same domain with no CORS to manage. Omit for a
+   * purely static distribution. */
+  apiOrigin?: StaticSiteApiOriginProps;
 }
 
 export class StaticSite extends Construct {
@@ -36,7 +63,7 @@ export class StaticSite extends Construct {
 
   constructor(scope: Construct, id: string, props: StaticSiteProps) {
     super(scope, id);
-    const { domainName, usEast1Provider } = props;
+    const { domainName, usEast1Provider, apiOrigin } = props;
 
     // ---------------------------------------------------------------
     // 1. Hosted zone — this becomes the source of truth for DNS once
@@ -103,7 +130,7 @@ export class StaticSite extends Construct {
       key: "index.html",
       contentType: "text/html",
       content:
-        "<!doctype html><html><head><title>Sachin \u2014 building something</title>" +
+        "<!doctype html><html><head><title>Sachin — building something</title>" +
         '<meta name="viewport" content="width=device-width, initial-scale=1"></head>' +
         '<body style="margin:0;display:flex;align-items:center;justify-content:center;' +
         'height:100vh;background:#12100E;color:#EDE6D8;font-family:system-ui,sans-serif;">' +
@@ -120,6 +147,8 @@ export class StaticSite extends Construct {
       signingProtocol: "sigv4",
     });
 
+    const API_ORIGIN_ID = "resume-api-origin";
+
     const distribution = new CloudfrontDistribution(this, "distribution", {
       enabled: true,
       isIpv6Enabled: true,
@@ -133,6 +162,30 @@ export class StaticSite extends Construct {
           domainName: bucket.bucketRegionalDomainName,
           originAccessControlId: oac.id,
         },
+        // Second origin is entirely optional — only present once the
+        // resume-request API exists (see main.ts). Keeping this
+        // conditional means StaticSite still works standalone.
+        ...(apiOrigin
+          ? [
+              {
+                originId: API_ORIGIN_ID,
+                domainName: apiOrigin.domainName,
+                customOriginConfig: {
+                  httpPort: 80,
+                  httpsPort: 443,
+                  originProtocolPolicy: "https-only",
+                  originSslProtocols: ["TLSv1.2"],
+                },
+                // CloudFront adds this header to every request it sends to
+                // THIS origin, regardless of what the viewer sent — the
+                // handler uses it to reject anything that reached the
+                // Function URL some other way. See resume-api.ts.
+                customHeader: [
+                  { name: "X-Origin-Verify", value: apiOrigin.originVerifySecret },
+                ],
+              },
+            ]
+          : []),
       ],
 
       defaultCacheBehavior: {
@@ -142,6 +195,22 @@ export class StaticSite extends Construct {
         viewerProtocolPolicy: "redirect-to-https",
         cachePolicyId: CACHING_OPTIMIZED_POLICY_ID,
       },
+
+      // Only present once apiOrigin is supplied. Matched before the
+      // default behavior for any request under this path pattern.
+      orderedCacheBehavior: apiOrigin
+        ? [
+            {
+              pathPattern: apiOrigin.pathPattern,
+              targetOriginId: API_ORIGIN_ID,
+              allowedMethods: ["GET", "HEAD", "OPTIONS", "PUT", "PATCH", "POST", "DELETE"],
+              cachedMethods: ["GET", "HEAD"],
+              viewerProtocolPolicy: "https-only",
+              cachePolicyId: CACHING_DISABLED_POLICY_ID,
+              originRequestPolicyId: ALL_VIEWER_ORIGIN_REQUEST_POLICY_ID,
+            },
+          ]
+        : undefined,
 
       // A static export has no server to resolve client-side routes like
       // /chitraguptha or /blog/some-post on a hard refresh, so unknown
