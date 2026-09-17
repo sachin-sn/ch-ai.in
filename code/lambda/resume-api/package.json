@@ -4,8 +4,9 @@
   "private": true,
   "description": "Lambda behind CloudFront (/api/resume/request) that gates the resume download: validates + captchas the submission, logs a telemetry row to DynamoDB, and returns a short-lived presigned S3 URL.",
   "scripts": {
-    "build": "esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/handler.js --minify",
-    "compile": "tsc --noEmit"
+    "build": "esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/handler.js --minify && npm run package",
+    "compile": "tsc --noEmit",
+    "package": "rm -f dist.zip && cd dist && zip -X -r ../dist.zip handler.js && cd .."
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.700.0",
