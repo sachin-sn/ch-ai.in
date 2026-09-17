@@ -1,7 +1,22 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+// Maps a site route to its /howdidimakethis/<slug> write-up, for pages
+// that have one -- currently just /resume. Anything not listed here (the
+// homepage, /blog, the other theme showcases) falls back to the
+// /howdidimakethis index rather than guessing at a specific project, since
+// there isn't one specific write-up that page is "about".
+const PATH_TO_SHOWCASE_SLUG: Record<string, string> = {
+  "/resume": "resume",
+};
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  const pathname = usePathname();
+  const showcaseSlug = pathname ? PATH_TO_SHOWCASE_SLUG[pathname] : undefined;
+  const showcaseHref = showcaseSlug ? `/howdidimakethis/${showcaseSlug}` : "/howdidimakethis";
   return (
     <footer className="ledger-rule mt-24">
       <div className="mx-auto flex max-w-5xl flex-col gap-3 px-6 py-8 font-mono text-sm text-ink-dim sm:flex-row sm:items-center sm:justify-between">
@@ -38,7 +53,7 @@ export default function Footer() {
           destination page's own boot-sequence entrance, not a delayed
           navigation here. */}
       <div className="flex justify-center pb-6">
-        <Link href="/howdidimakethis/ch-ai" className="footer-egg-link">
+        <Link href={showcaseHref} className="footer-egg-link">
           peek under the hood
         </Link>
       </div>
