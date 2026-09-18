@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "blog:new": "node scripts/blog.mjs new",
+    "blog:list": "node scripts/blog.mjs list",
+    "blog:edit": "node scripts/blog.mjs edit",
+    "blog:publish": "node scripts/blog.mjs publish",
+    "blog:unpublish": "node scripts/blog.mjs unpublish",
+    "blog:delete": "node scripts/blog.mjs delete"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
