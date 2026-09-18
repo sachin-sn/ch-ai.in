@@ -19,6 +19,7 @@ on:
     paths:
       - "code/app/**"
       - "code/components/**"
+      - "code/content/**"
       - "code/lib/**"
       - "code/public/**"
       - "code/themes/**"
