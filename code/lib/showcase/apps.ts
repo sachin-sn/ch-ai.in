@@ -39,6 +39,13 @@ export const showcaseApps: ShowcaseApp[] = [
     repoUrl: "https://github.com/sachin-sn/ch-ai.in",
   },
   {
+    slug: "blog",
+    name: "Writing",
+    tagline: "A blog with no CMS -- Markdown files, rendered at build time, zero new AWS resources.",
+    status: "live",
+    repoUrl: "https://github.com/sachin-sn/ch-ai.in",
+  },
+  {
     slug: "chitragupta",
     name: "Chitragupta",
     tagline: "Public good-deed / bad-deed feedback, without the pitchforks.",
