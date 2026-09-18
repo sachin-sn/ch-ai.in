@@ -17,6 +17,11 @@ const eslintConfig = defineConfig([
     // bundle is a large minified file that this app's lint has no business
     // parsing (it isn't even valid to typescript-eslint's parser as JS).
     "lambda/**",
+    // Leftover from the abandoned Chitragupta.ai plan (see project notes) --
+    // not imported by anything under app/components/lib/themes, i.e. dead
+    // code, not the live site. Excluded rather than fixed: touching it risks
+    // masking whether it's truly unused, and it isn't part of what ships.
+    "Chitragpta/**",
   ]),
 ]);
 
