@@ -34,6 +34,7 @@
     "node_modules",
     "Chitragpta",
     "infra-bootstrap",
-    "infra"
+    "infra",
+    "lambda"
   ]
 }
