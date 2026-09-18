@@ -32,6 +32,13 @@ export const showcaseApps: ShowcaseApp[] = [
     repoUrl: "https://github.com/sachin-sn/ch-ai.in",
   },
   {
+    slug: "resume",
+    name: "Resume download",
+    tagline: "An email-gated, presigned-URL resume download, with a telemetry trail.",
+    status: "live",
+    repoUrl: "https://github.com/sachin-sn/ch-ai.in",
+  },
+  {
     slug: "chitragupta",
     name: "Chitragupta",
     tagline: "Public good-deed / bad-deed feedback, without the pitchforks.",

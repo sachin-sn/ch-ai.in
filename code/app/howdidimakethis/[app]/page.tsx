@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ShowcaseTopBar from "@/components/showcase/ShowcaseTopBar";
 import ChAiContent from "@/components/showcase/ChAiContent";
+import ResumeContent from "@/components/showcase/ResumeContent";
 import { getLiveShowcaseApps, getShowcaseApp } from "@/lib/showcase/apps";
 
 // output: "export" (see next.config.ts) means every dynamic path has to be
@@ -43,7 +44,13 @@ export default async function ShowcaseAppPage({
   return (
     <div className="sc-shell">
       <ShowcaseTopBar path={`/howdidimakethis/${app.slug}`} repoUrl={app.repoUrl} />
-      {slug === "ch-ai" ? <ChAiContent /> : notFound()}
+      {slug === "ch-ai" ? (
+        <ChAiContent />
+      ) : slug === "resume" ? (
+        <ResumeContent />
+      ) : (
+        notFound()
+      )}
     </div>
   );
 }
