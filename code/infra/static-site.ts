@@ -286,5 +286,31 @@ export class StaticSite extends Construct {
         evaluateTargetHealth: false,
       },
     });
+
+    // ---------------------------------------------------------------
+    // 7. Email forwarding (ImprovMX) — hello@ch-ai.in -> your inbox.
+    //    No mailbox to run: ImprovMX just receives mail for the domain
+    //    and relays it. Aliases (which address forwards to which inbox)
+    //    are configured in the ImprovMX dashboard, not here — these
+    //    records only tell the internet "ImprovMX handles mail for this
+    //    domain" and "ImprovMX is allowed to send mail claiming to be
+    //    from this domain" (SPF, so forwarded mail doesn't get flagged
+    //    as spoofed).
+    // ---------------------------------------------------------------
+    new Route53Record(this, "mx", {
+      zoneId: zone.zoneId,
+      name: domainName,
+      type: "MX",
+      ttl: 3600,
+      records: ["10 mx1.improvmx.com", "20 mx2.improvmx.com"],
+    });
+
+    new Route53Record(this, "spf-txt", {
+      zoneId: zone.zoneId,
+      name: domainName,
+      type: "TXT",
+      ttl: 3600,
+      records: ["v=spf1 include:spf.improvmx.com ~all"],
+    });
   }
 }
