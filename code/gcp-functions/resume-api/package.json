@@ -1,0 +1,24 @@
+{
+  "name": "ch-ai-resume-api-gcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloud Function (2nd gen) behind Firebase Hosting (/api/resume/request) that gates the resume download: validates + captchas the submission, logs a telemetry row to Firestore, and returns a short-lived V4 signed GCS URL.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && npm run package",
+    "compile": "tsc --noEmit",
+    "package": "rm -f dist.zip && cp package.json dist/package.json && cd dist && zip -X -r ../dist.zip . && cd .."
+  },
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.2",
+    "@google-cloud/firestore": "^7.9.0",
+    "@google-cloud/storage": "^7.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.9.3"
+  }
+}

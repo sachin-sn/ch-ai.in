@@ -1,5 +1,5 @@
 import { Construct } from "constructs";
-import { App, TerraformStack, TerraformOutput, GcsBackend } from "cdktf";
+import { App, TerraformStack, TerraformOutput, TerraformVariable, GcsBackend } from "cdktf";
 
 import { GoogleProvider } from "./.gen/providers/google/provider";
 import { ProjectService } from "./.gen/providers/google/project-service";
@@ -7,6 +7,7 @@ import { DnsManagedZone } from "./.gen/providers/google/dns-managed-zone";
 import { DnsRecordSet } from "./.gen/providers/google/dns-record-set";
 import { GoogleBetaProvider } from "./.gen/providers/google-beta/provider";
 import { GoogleFirebaseProject } from "./.gen/providers/google-beta/google-firebase-project";
+import { ResumeApi } from "./resume-api";
 
 /**
  * infra-gcp
@@ -30,6 +31,7 @@ import { GoogleFirebaseProject } from "./.gen/providers/google-beta/google-fireb
 const GCP_PROJECT_ID = process.env.GCP_PROJECT_ID ?? "my-project-1530065360314";
 const GCP_REGION = process.env.GCP_REGION ?? "asia-south1";
 const DOMAIN_NAME = "ch-ai.in";
+const RESUME_OBJECT_KEY = "sachin-nagaraja-resume.pdf";
 
 class GcpStaticSiteStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
@@ -160,6 +162,26 @@ class GcpStaticSiteStack extends TerraformStack {
       value: zone.nameServers,
       description:
         "Copy these into your domain registrar's nameserver settings for ch-ai.in - this is what actually cuts DNS over from Route53.",
+    });
+
+    // ---------------------------------------------------------------
+    // resume-api: the GCP port of infra/resume-api.ts (AWS). Same
+    // Turnstile-secret-via-TerraformVariable pattern as the AWS stack --
+    // set at deploy time as TF_VAR_turnstile_secret_key, never hardcoded
+    // or committed. See resume-api.ts and ../gcp-functions/resume-api
+    // for the rest.
+    // ---------------------------------------------------------------
+    const turnstileSecretKey = new TerraformVariable(this, "turnstile_secret_key", {
+      type: "string",
+      sensitive: true,
+      description: "Cloudflare Turnstile secret key, from the Turnstile dashboard.",
+    });
+
+    new ResumeApi(this, "resume-api", {
+      projectId: GCP_PROJECT_ID,
+      region: GCP_REGION,
+      turnstileSecretKey: turnstileSecretKey.value,
+      resumeObjectKey: RESUME_OBJECT_KEY,
     });
   }
 }

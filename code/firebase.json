@@ -8,6 +8,15 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/api/resume/**",
+        "function": {
+          "functionId": "resume-api",
+          "region": "asia-south1"
+        }
+      }
     ]
   }
 }
