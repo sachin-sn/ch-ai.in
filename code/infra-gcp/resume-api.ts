@@ -11,6 +11,7 @@ import { ServiceAccountIamMember } from "./.gen/providers/google/service-account
 import { ProjectIamMember } from "./.gen/providers/google/project-iam-member";
 import { Cloudfunctions2Function } from "./.gen/providers/google/cloudfunctions2-function";
 import { Cloudfunctions2FunctionIamMember } from "./.gen/providers/google/cloudfunctions2-function-iam-member";
+import { CloudRunServiceIamMember } from "./.gen/providers/google/cloud-run-service-iam-member";
 
 export interface ResumeApiProps {
   projectId: string;
@@ -207,6 +208,22 @@ export class ResumeApi extends Construct {
       cloudFunction: fn.name,
       location: region,
       role: "roles/cloudfunctions.invoker",
+      member: "allUsers",
+    });
+
+    // The binding above grants invoker at the Cloud Functions API level,
+    // but a 2nd-gen function is actually a Cloud Run service under the
+    // hood, and that IAM grant doesn't reliably propagate down to Cloud
+    // Run's own authorization check -- confirmed in the GCP Console
+    // (Cloud Run > resume-api > Security) still showing "Require
+    // authentication" after the binding above applied cleanly, which is
+    // exactly why the Hosting rewrite got a 403. Cloud Run's own invoker
+    // role has to be granted directly on the underlying service too.
+    new CloudRunServiceIamMember(this, "function-run-invoker", {
+      project: projectId,
+      service: fn.name,
+      location: region,
+      role: "roles/run.invoker",
       member: "allUsers",
     });
 
