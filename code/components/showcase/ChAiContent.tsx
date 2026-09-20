@@ -4,9 +4,9 @@ import ArchDiagram from "./ArchDiagram";
 
 // The actual write-up for /howdidimakethis/ch-ai. Every technical claim
 // here is real, pulled from this repo's own infra/CI config (code/infra,
-// code/infra-bootstrap, .github/workflows) rather than a generic
-// "how portfolios usually deploy" description -- the whole point of this
-// page is that it's true.
+// code/infra-bootstrap, code/infra-gcp, code/infra-gcp-bootstrap,
+// .github/workflows) rather than a generic "how portfolios usually
+// deploy" description -- the whole point of this page is that it's true.
 export default function ChAiContent() {
   return (
     <>
@@ -54,8 +54,8 @@ export default function ChAiContent() {
             "TypeScript (strict)",
             "Tailwind CSS v4",
             "CDKTF (Terraform CDK)",
-            "GitHub Actions",
-            "AWS: Route53, ACM, S3, CloudFront",
+            "GitHub Actions (Workload Identity Federation)",
+            "GCP: Cloud DNS, Firebase Hosting",
           ].map((item) => (
             <span key={item} className="sc-chip">
               {item}
@@ -71,15 +71,15 @@ export default function ChAiContent() {
         </div>
         <p>
           Two flows worth knowing about: what happens when a change gets
-          pushed, and what happens when someone opens the site. Both end up at
-          the same three AWS resources.
+          pushed, and what happens when someone opens the site. Both end up
+          at the same two GCP resources.
         </p>
         <div className="sc-diagram">
           <ArchDiagram />
         </div>
         <p className="sc-diagram-caption">
-          Both flows converge on the same private S3 bucket and CloudFront
-          distribution — one writes to it, the other reads from it.
+          Both flows converge on the same Firebase Hosting site — one
+          deploys to it, the other is served from it.
         </p>
       </Reveal>
 
@@ -90,20 +90,34 @@ export default function ChAiContent() {
         </div>
         <p>
           Infrastructure is code, not console clicks: <strong>CDKTF</strong>{" "}
-          (Terraform CDK, written in TypeScript) defines a Route53 hosted
-          zone, an ACM certificate (requested in <code>us-east-1</code> — a
-          hard CloudFront requirement, regardless of where everything else
-          runs), a private S3 bucket, and a CloudFront distribution that
-          reaches that bucket through Origin Access Control rather than a
-          public bucket policy.
+          (Terraform CDK, written in TypeScript) defines a{" "}
+          <strong>Cloud DNS</strong> managed zone for <code>ch-ai.in</code>{" "}
+          — carrying the MX/SPF records that keep email forwarding working,
+          plus the A and TXT records Firebase needs to verify and serve the
+          custom domain — and a <strong>Firebase Hosting</strong> site the
+          static export deploys to.
         </p>
         <p>
-          It&apos;s actually <strong>two</strong> CDKTF stacks. A one-time,
-          hand-run <code>infra-bootstrap</code> stack creates the remote
-          Terraform state bucket, a DynamoDB lock table, and the IAM OIDC role
-          GitHub Actions assumes. The real stack, <code>infra</code>, reads
-          and writes its state there — shared between a laptop and CI, so
-          neither one applies a change the other can&apos;t see.
+          It&apos;s actually <strong>two</strong> CDKTF stacks, the same split
+          the AWS stack used. A one-time, hand-run{" "}
+          <code>infra-gcp-bootstrap</code> stack sets up{" "}
+          <strong>Workload Identity Federation</strong> — a WIF pool and
+          provider GitHub Actions federates into, a deploy service account
+          scoped to exactly this project, and the Cloud Storage bucket the
+          real stack&apos;s state lives in. The real stack,{" "}
+          <code>infra-gcp</code>, reads and writes its state there.
+        </p>
+        <p>
+          This site didn&apos;t start on GCP. It ran entirely on AWS — S3 +
+          CloudFront + Route53 + ACM — until a billing/support dead end
+          made GCP the faster path forward. Rather than tear the AWS stack
+          down, it&apos;s left deployed on purpose: CloudFront, S3, ACM,
+          Lambda, DynamoDB, and IAM are all still there, orphaned, free to
+          run at this traffic level, and ready to <code>cdktf deploy</code>{" "}
+          live in an interview if the multi-cloud story is worth telling.
+          Only Route53&apos;s hosted zone got deleted — the one AWS resource
+          in this whole stack that actually cost money ($0.50/mo), and the
+          only thing DNS ownership required removing.
         </p>
       </Reveal>
 
@@ -113,25 +127,29 @@ export default function ChAiContent() {
           <h2>ci / cd</h2>
         </div>
         <p>
-          Two path-filtered GitHub Actions workflows, both authenticating to
-          AWS via GitHub&apos;s OIDC provider — there are no long-lived AWS
-          keys sitting in repo secrets anywhere.
+          The live deploy path authenticates to GCP the same way the AWS
+          one did to AWS — no long-lived credentials sitting in repo
+          secrets anywhere.
         </p>
         <p>
-          <strong>app-deploy.yml</strong> runs on every push to{" "}
-          <code>main</code> that touches the app code: install, lint, build
-          the static export, sync the output to S3 with{" "}
-          <code>--delete</code>, invalidate CloudFront. No approval gate — a
+          <strong>gcp-static-deploy.yml</strong> runs on every push to{" "}
+          <code>main</code> that touches the app code: install, build the
+          static export, federate into a scoped GCP service account via{" "}
+          <strong>Workload Identity Federation</strong> — no service-account
+          JSON key ever touches this repo — then{" "}
+          <code>firebase deploy --only hosting</code>. No approval gate — a
           content change is low-stakes and reversible.
         </p>
         <p>
-          <strong>infra.yml</strong> is more careful, because this stack can
-          touch live DNS and the CDN in front of a real domain. A pull
-          request touching <code>infra/**</code> only ever gets a read-only{" "}
-          <code>cdktf diff</code> comment. An actual <code>cdktf deploy</code>{" "}
-          only runs on push to <code>main</code>, and even then it pauses at
-          a GitHub <code>production</code> environment with a required
-          reviewer — meaning me, by hand, every time.
+          Cloud DNS and Firebase project changes (<code>infra-gcp</code>)
+          don&apos;t have a CI pipeline yet — they&apos;re applied by hand,{" "}
+          <code>npx cdktf deploy</code> from a laptop. The AWS stack&apos;s{" "}
+          <code>infra.yml</code>, by contrast, still exists exactly as it
+          did before the migration: a pull request touching{" "}
+          <code>infra/**</code> gets a read-only <code>cdktf diff</code>{" "}
+          comment, and an actual deploy pauses at a required reviewer. It
+          still works — it&apos;s just not wired to anything that affects
+          the live site anymore, since DNS no longer points at CloudFront.
         </p>
       </Reveal>
 
@@ -203,6 +221,22 @@ export default function ChAiContent() {
               and it opened full-width, as intended.
             </p>
           </div>
+          <div className="sc-note">
+            <div className="sc-note-title">the WIF condition that only matched a placeholder</div>
+            <p>
+              The Workload Identity Federation provider&apos;s{" "}
+              <code>attributeCondition</code> is supposed to check the
+              deploying repo is this one. It got deployed checking against{" "}
+              <code>REPLACE_ME_github_owner/REPLACE_ME_github_repo</code>{" "}
+              instead — the real values were meant to come from env vars
+              that were never actually set on the bootstrap run that created
+              it, so the code&apos;s placeholder defaults got baked into
+              live infrastructure. Every deploy failed auth with{" "}
+              <code>unauthorized_client</code> until that got spotted by
+              reading the deployed Terraform state directly and hardcoding
+              the real repo as the default instead.
+            </p>
+          </div>
         </div>
       </Reveal>
 
@@ -235,6 +269,13 @@ export default function ChAiContent() {
           <div className="sc-timeline-item">
             <strong>v4.</strong> This page — a self-documenting appendix,
             reachable only if you go looking for it.
+          </div>
+          <div className="sc-timeline-item">
+            <strong>v5.</strong> Hosting migrated to GCP — Firebase Hosting
+            behind Cloud DNS — after a billing/support dead end on AWS. The
+            original stack stays deployed and orphaned as a live demo;
+            Route53&apos;s hosted zone, the one piece of it that actually
+            cost money, is the only part that got deleted.
           </div>
         </div>
       </Reveal>

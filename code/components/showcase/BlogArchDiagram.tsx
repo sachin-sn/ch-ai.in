@@ -11,7 +11,7 @@ export default function BlogArchDiagram() {
     <svg
       viewBox="0 0 720 420"
       role="img"
-      aria-label="Architecture diagram: at build time, Markdown files in content/blog are parsed by lib/blog/posts.ts and turned into static routes and Open Graph tags by next build, which deploys through the same S3 and CloudFront the rest of the site already uses. At request time, a visitor's browser gets fully static HTML; the BlogIndex component adds client-side search and pagination after load, and the LinkedIn share button opens linkedin.com directly, outside the site's own infrastructure."
+      aria-label="Architecture diagram: at build time, Markdown files in content/blog are parsed by lib/blog/posts.ts and turned into static routes and Open Graph tags by next build, which deploys through the same Firebase Hosting site the rest of the site already uses. At request time, a visitor's browser gets fully static HTML; the BlogIndex component adds client-side search and pagination after load, and the LinkedIn share button opens linkedin.com directly, outside the site's own infrastructure."
     >
       <defs>
         <marker id="sc-b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -51,9 +51,9 @@ export default function BlogArchDiagram() {
         {/* -------- row 2: existing deploy target, drawn dashed on purpose -------- */}
         <rect x="200" y="150" width="290" height="86" rx="8" fill="none" stroke="var(--sc-line)" strokeDasharray="4 3" />
         <text x="345" y="140" textAnchor="middle" fontSize="10" fill="var(--sc-ink-dim)">already exists — nothing new provisioned</text>
-        <text x="345" y="176" textAnchor="middle" fontSize="11.5" fontWeight="700" fill="var(--sc-ink)">S3 bucket + CloudFront</text>
-        <text x="345" y="194" textAnchor="middle" fontSize="9" fill="var(--sc-ink-dim)">the same private bucket + distribution</text>
-        <text x="345" y="207" textAnchor="middle" fontSize="9" fill="var(--sc-ink-dim)">that serve the rest of ch-ai.in</text>
+        <text x="345" y="176" textAnchor="middle" fontSize="11.5" fontWeight="700" fill="var(--sc-ink)">Firebase Hosting</text>
+        <text x="345" y="194" textAnchor="middle" fontSize="9" fill="var(--sc-ink-dim)">the same Firebase Hosting site</text>
+        <text x="345" y="207" textAnchor="middle" fontSize="9" fill="var(--sc-ink-dim)">that serves the rest of ch-ai.in</text>
         <text x="345" y="222" textAnchor="middle" fontSize="8.5" fill="var(--sc-ink-dim)">deployed by the existing GitHub Actions pipeline</text>
 
         <path d="M531 116 L531 133 L390 133 L390 150" fill="none" stroke="var(--sc-accent-bright)" strokeWidth="1.5" markerEnd="url(#sc-b-arrow)" />

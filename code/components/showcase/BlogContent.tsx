@@ -16,7 +16,7 @@ export default function BlogContent() {
         </p>
         <p className="sc-boot-line">
           $ cat ./README.md | head -2<br />
-          <span className="sc-ok">&gt;</span> a blog with no CMS, no database, and no new AWS resources
+          <span className="sc-ok">&gt;</span> a blog with no CMS, no database, and no new GCP resources
         </p>
         <p className="sc-boot-line">
           $ ./reveal --app=blog<br />
@@ -27,7 +27,7 @@ export default function BlogContent() {
           <span className="sc-cursor" aria-hidden="true" />
         </h1>
         <p className="sc-hero-sub">
-          No third-party CMS, no S3 content bucket, no Lambda. Posts are
+          No third-party CMS, no new storage bucket, no serverless function. Posts are
           files in this repo, rendered into the same static export as
           every other page on the site.
         </p>
@@ -45,9 +45,9 @@ export default function BlogContent() {
           options got laid out — repo-based Markdown won on three counts:
         </p>
         <p>
-          <strong>Zero new infrastructure.</strong> No extra S3 bucket, no
-          new CloudFront behavior, no Lambda. Publishing a post rides the
-          same GitHub Actions pipeline that already deploys everything
+          <strong>Zero new infrastructure.</strong> No extra storage bucket,
+          no new hosting config, no Cloud Function. Publishing a post rides
+          the same GitHub Actions pipeline that already deploys everything
           else on this site.
         </p>
         <p>
@@ -82,7 +82,7 @@ export default function BlogContent() {
           There&apos;s no request-time backend here — the interesting part
           of this architecture is a <em>build-time</em> pipeline, feeding
           infrastructure that already existed. Nothing new got provisioned
-          in AWS for this feature at all.
+          in GCP for this feature at all.
         </p>
         <div className="sc-diagram">
           <BlogArchDiagram />
