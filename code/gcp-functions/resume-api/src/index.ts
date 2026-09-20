@@ -51,12 +51,27 @@ async function verifyTurnstile(token: string, remoteIp: string | undefined): Pro
       success?: boolean;
       action?: string;
       hostname?: string;
+      "error-codes"?: string[];
     };
-    return (
+    const ok =
       data.success === true &&
       data.action === TURNSTILE_ACTION &&
-      data.hostname === TURNSTILE_ALLOWED_HOSTNAME
-    );
+      data.hostname === TURNSTILE_ALLOWED_HOSTNAME;
+    if (!ok) {
+      // None of these fields are secret -- siteverify never echoes back the
+      // secret key -- so this is safe to log as-is. Exists specifically to
+      // tell apart "wrong secret key" (error-codes: invalid-input-secret),
+      // "token already used" (timeout-or-duplicate), and a hostname/action
+      // mismatch, which otherwise all collapse into the same generic
+      // 400 the client sees.
+      console.warn("turnstile verification rejected", {
+        success: data.success,
+        action: data.action,
+        hostname: data.hostname,
+        errorCodes: data["error-codes"],
+      });
+    }
+    return ok;
   } catch (err) {
     // Cloudflare being unreachable (including our own timeout above) should
     // fail CLOSED (reject the submission), not silently skip verification.
