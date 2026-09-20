@@ -70,6 +70,7 @@ const projects = [
       !f.startsWith("code/infra-gcp/") &&
       !f.startsWith("code/infra-gcp-bootstrap/") &&
       !f.startsWith("code/lambda/") &&
+      !f.startsWith("code/gcp-functions/") &&
       !f.startsWith("code/Chitragpta/"),
     // Mirrors .github/workflows/app-deploy.yml's actual gate exactly.
     steps: [{ label: "eslint", command: ["npm", "run", "lint"] }],
@@ -97,6 +98,18 @@ const projects = [
     cwd: "code/infra-gcp-bootstrap",
     match: (f) => f.startsWith("code/infra-gcp-bootstrap/"),
     steps: [{ label: "tsc --noEmit", command: ["npm", "run", "compile"] }],
+  },
+  {
+    name: "code/gcp-functions/resume-api",
+    cwd: "code/gcp-functions/resume-api",
+    match: (f) => f.startsWith("code/gcp-functions/resume-api/"),
+    // Mirrors the Lambda entry below -- a type error OR a build/zip
+    // error would both break a real cdktf deploy of infra-gcp, so check
+    // both here too.
+    steps: [
+      { label: "tsc --noEmit", command: ["npm", "run", "compile"] },
+      { label: "build + zip", command: ["npm", "run", "build"] },
+    ],
   },
   {
     name: "code/lambda/resume-api",

@@ -37,6 +37,7 @@
     "infra",
     "lambda",
     "infra-gcp-bootstrap",
-    "infra-gcp"
+    "infra-gcp",
+    "gcp-functions"
   ]
 }

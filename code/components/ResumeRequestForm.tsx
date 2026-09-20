@@ -19,14 +19,18 @@ declare global {
 type Status = "idle" | "submitting" | "success" | "error";
 
 // Public by design -- Turnstile's site key is meant to ship in client code;
-// the secret key that actually verifies tokens lives only in the Lambda's
-// environment (see ../lambda/resume-api). Baked in at build time by Next
+// the secret key that actually verifies tokens lives only in the resume-api
+// function's environment (see ../gcp-functions/resume-api; the original
+// AWS Lambda at ../lambda/resume-api still has its own copy too). Baked
+// in at build time by Next
 // (NEXT_PUBLIC_ vars are inlined into the static export) -- set as a
 // GitHub Actions repo variable, see DEPLOYMENT.md.
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
-// Same-origin under CloudFront (see infra/static-site.ts's apiOrigin
-// behavior) -- no CORS to configure, this is just a normal relative fetch.
+// Same-origin via a Firebase Hosting rewrite (see firebase.json and
+// infra-gcp/resume-api.ts) -- no CORS to configure, this is just a
+// normal relative fetch. (Ran through a CloudFront custom origin to the
+// same effect before the GCP migration -- see ../lambda/resume-api.)
 const REQUEST_ENDPOINT = "/api/resume/request";
 
 export default function ResumeRequestForm() {
@@ -45,8 +49,8 @@ export default function ResumeRequestForm() {
     widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
       sitekey: TURNSTILE_SITE_KEY,
       theme: "auto",
-      // Must match TURNSTILE_ACTION in ../lambda/resume-api/src/handler.ts --
-      // the handler verifies this server-side so a token minted for some
+      // Must match TURNSTILE_ACTION in ../gcp-functions/resume-api/src/index.ts --
+      // the function verifies this server-side so a token minted for some
       // other Turnstile integration can't be replayed against this endpoint.
       action: "resume-request",
       callback: (token: string) => {
