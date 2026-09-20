@@ -28,6 +28,7 @@ on:
       - "!code/infra-gcp/**"
       - "!code/infra-gcp-bootstrap/**"
       - "!code/lambda/**"
+      - ".github/workflows/gcp-static-deploy.yml"
   workflow_dispatch: {}
 
 permissions:
