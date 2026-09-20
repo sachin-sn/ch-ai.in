@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc && npm run package",
     "compile": "tsc --noEmit",
-    "package": "rm -f dist.zip && cp package.json dist/package.json && cd dist && zip -X -r ../dist.zip . && cd .."
+    "package": "rm -f dist.zip && node write-deploy-package-json.js && cd dist && zip -X -r ../dist.zip . && cd .."
   },
   "engines": {
     "node": "20"
