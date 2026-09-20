@@ -1,0 +1,26 @@
+{
+  "name": "infra-gcp-bootstrap",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.ts",
+  "private": true,
+  "scripts": {
+    "get": "cdktf get",
+    "typecheck": "tsc --noEmit",
+    "synth": "cdktf synth",
+    "deploy": "cdktf deploy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cdktf": "^0.21.0",
+    "constructs": "^10.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "cdktf-cli": "^0.21.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

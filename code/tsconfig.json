@@ -35,6 +35,8 @@
     "Chitragpta",
     "infra-bootstrap",
     "infra",
-    "lambda"
+    "lambda",
+    "infra-gcp-bootstrap",
+    "infra-gcp"
   ]
 }
