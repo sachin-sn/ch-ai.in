@@ -33,8 +33,8 @@ import { ServiceAccountIamMember } from "./.gen/providers/google/service-account
 // ---- fill these in before running ----
 const GCP_PROJECT_ID = process.env.GCP_PROJECT_ID ?? "my-project-1530065360314";
 const GCP_REGION = process.env.GCP_REGION ?? "asia-south1"; // Mumbai; change if you want the state bucket elsewhere
-const GITHUB_OWNER = process.env.GITHUB_OWNER ?? "REPLACE_ME_github_owner";
-const GITHUB_REPO = process.env.GITHUB_REPO ?? "REPLACE_ME_github_repo"; // just the repo name, not owner/repo
+const GITHUB_OWNER = process.env.GITHUB_OWNER ?? "sachin-sn";
+const GITHUB_REPO = process.env.GITHUB_REPO ?? "ch-ai.in"; // just the repo name, not owner/repo
 // ---------------------------------------
 
 class GcpBootstrapStack extends TerraformStack {
