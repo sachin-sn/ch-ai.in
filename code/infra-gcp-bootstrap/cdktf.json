@@ -1,0 +1,8 @@
+{
+  "language": "typescript",
+  "app": "npx ts-node main.ts",
+  "projectId": "infra-gcp-bootstrap",
+  "terraformProviders": ["hashicorp/google@~> 6.0"],
+  "terraformModules": [],
+  "context": {}
+}
