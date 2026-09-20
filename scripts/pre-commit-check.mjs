@@ -67,6 +67,8 @@ const projects = [
       f.startsWith("code/") &&
       !f.startsWith("code/infra/") &&
       !f.startsWith("code/infra-bootstrap/") &&
+      !f.startsWith("code/infra-gcp/") &&
+      !f.startsWith("code/infra-gcp-bootstrap/") &&
       !f.startsWith("code/lambda/") &&
       !f.startsWith("code/Chitragpta/"),
     // Mirrors .github/workflows/app-deploy.yml's actual gate exactly.
@@ -82,6 +84,18 @@ const projects = [
     name: "code/infra-bootstrap (CDKTF)",
     cwd: "code/infra-bootstrap",
     match: (f) => f.startsWith("code/infra-bootstrap/"),
+    steps: [{ label: "tsc --noEmit", command: ["npm", "run", "compile"] }],
+  },
+  {
+    name: "code/infra-gcp (CDKTF)",
+    cwd: "code/infra-gcp",
+    match: (f) => f.startsWith("code/infra-gcp/"),
+    steps: [{ label: "tsc --noEmit", command: ["npm", "run", "compile"] }],
+  },
+  {
+    name: "code/infra-gcp-bootstrap (CDKTF)",
+    cwd: "code/infra-gcp-bootstrap",
+    match: (f) => f.startsWith("code/infra-gcp-bootstrap/"),
     steps: [{ label: "tsc --noEmit", command: ["npm", "run", "compile"] }],
   },
   {

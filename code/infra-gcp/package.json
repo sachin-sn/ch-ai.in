@@ -8,7 +8,8 @@
     "get": "cdktf get",
     "typecheck": "tsc --noEmit",
     "synth": "cdktf synth",
-    "deploy": "cdktf deploy"
+    "deploy": "cdktf deploy",
+    "compile": "tsc --pretty --noEmit"
   },
   "keywords": [],
   "author": "",
