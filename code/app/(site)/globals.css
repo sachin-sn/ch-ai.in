@@ -269,6 +269,19 @@ body {
   opacity: 1;
   animation: egg-glitch 0.5s steps(2, end) infinite;
 }
+/* Touch devices (phones/tablets) never fire :hover, so without this the
+   link sits at 0.55 opacity forever -- nothing ever bumps it up, because
+   the event that's supposed to is one touch input can't send. Reported
+   as "not visible" on a Pixel 9 Pro XL in Chrome for exactly this reason:
+   it's technically rendered, just too faint to notice without the reveal
+   a mouse hover gives on desktop. `hover: none` targets touch/stylus
+   input specifically (as opposed to a mouse), so desktop keeps the
+   original subtle default and the glitch-on-hover payoff. */
+@media (hover: none) {
+  .footer-egg-link {
+    opacity: 0.85;
+  }
+}
 @keyframes egg-glitch {
   0%, 100% {
     text-shadow: none;

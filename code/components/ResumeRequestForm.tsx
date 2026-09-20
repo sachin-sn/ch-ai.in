@@ -129,6 +129,8 @@ export default function ResumeRequestForm() {
                 <p className="text-sm text-ink-dim">This link expires in 10 minutes — download it now.</p>
                 <a
                   href={downloadUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-block rounded-md bg-accent-bright px-5 py-2.5 font-mono text-sm font-bold uppercase tracking-wide text-surface transition hover:opacity-90"
                 >
                   Download resume
