@@ -29,7 +29,23 @@ const TURNSTILE_ALLOWED_HOSTNAME = "ch-ai.in";
 async function verifyTurnstile(token: string, remoteIp: string | undefined): Promise<boolean> {
   // Cheap checks before spending a network call on Cloudflare -- also
   // guards the URLSearchParams call below against a non-string value.
+  // Logged (token length only, never the token itself) because this path
+  // previously failed completely silently -- the generic 400 the client
+  // sees doesn't distinguish it from a real siteverify rejection.
   if (typeof token !== "string" || token.length === 0 || token.length > 2048) {
+    console.warn("turnstile verification rejected: bad token shape", {
+      tokenType: typeof token,
+      tokenLength: typeof token === "string" ? token.length : undefined,
+    });
+    return false;
+  }
+
+  if (!TURNSTILE_SECRET_KEY) {
+    // Would otherwise reach Cloudflare with secret="" and get a generic
+    // missing-input-secret rejection below, but this is cheaper to check
+    // and worth its own explicit line since it points at deploy config
+    // (the env var), not the request.
+    console.warn("turnstile verification rejected: TURNSTILE_SECRET_KEY is not set");
     return false;
   }
 
@@ -46,7 +62,17 @@ async function verifyTurnstile(token: string, remoteIp: string | undefined): Pro
         ...(remoteIp ? { remoteip: remoteIp } : {}),
       }),
     });
-    if (!res.ok) return false;
+    if (!res.ok) {
+      // Previously a silent `return false` -- if Cloudflare itself is
+      // rejecting the HTTP request (not just the token), this is the only
+      // place that would ever show it.
+      const bodyText = await res.text().catch(() => "<unreadable>");
+      console.warn("turnstile verification rejected: siteverify HTTP error", {
+        status: res.status,
+        bodyText: bodyText.slice(0, 500),
+      });
+      return false;
+    }
     const data = (await res.json()) as {
       success?: boolean;
       action?: string;
