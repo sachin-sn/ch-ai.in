@@ -52,6 +52,14 @@ jobs:
 
       - name: Build static export
         working-directory: code
+        env:
+          # Public Cloudflare Turnstile site key -- same repo Variable the
+          # AWS workflow (app-deploy.yml) already uses, just never wired
+          # into this one. Without it, NEXT_PUBLIC_TURNSTILE_SITE_KEY is
+          # empty at build time and ResumeRequestForm skips rendering the
+          # widget entirely (safe by design -- see its NEXT_PUBLIC_ comment)
+          # rather than erroring, which is why this was silent.
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
         run: npm run build
 
       - id: auth
