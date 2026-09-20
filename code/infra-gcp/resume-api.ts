@@ -1,6 +1,7 @@
 import * as path from "path";
 import { Construct } from "constructs";
 import { TerraformAsset, TerraformOutput, AssetType } from "cdktf";
+import { ProjectService } from "./.gen/providers/google/project-service";
 import { StorageBucket } from "./.gen/providers/google/storage-bucket";
 import { StorageBucketIamMember } from "./.gen/providers/google/storage-bucket-iam-member";
 import { StorageBucketObject } from "./.gen/providers/google/storage-bucket-object";
@@ -38,6 +39,32 @@ export class ResumeApi extends Construct {
     this.resumeObjectKey = resumeObjectKey;
 
     // ---------------------------------------------------------------
+    // 0. APIs this construct needs that infra-gcp's other resources
+    //    (DNS, the Firebase project) don't already enable. Cloud
+    //    Functions 2nd gen builds via Cloud Build into Artifact
+    //    Registry and runs on Cloud Run under the hood; Eventarc is
+    //    required even for a plain HTTP function; IAM Credentials
+    //    backs the V4 signed URL's signBlob call.
+    // ---------------------------------------------------------------
+    const requiredApis = [
+      "cloudfunctions.googleapis.com",
+      "run.googleapis.com",
+      "cloudbuild.googleapis.com",
+      "artifactregistry.googleapis.com",
+      "eventarc.googleapis.com",
+      "firestore.googleapis.com",
+      "iamcredentials.googleapis.com",
+    ];
+    const enabledApis = requiredApis.map(
+      (service) =>
+        new ProjectService(this, `api-${service.split(".")[0]}`, {
+          project: projectId,
+          service,
+          disableOnDestroy: false,
+        }),
+    );
+
+    // ---------------------------------------------------------------
     // 1. A separate, small private bucket for just the resume file --
     //    deliberately not the site's own bucket (there isn't one here
     //    anyway, Firebase Hosting manages its own storage), so this
@@ -68,6 +95,7 @@ export class ResumeApi extends Construct {
       locationId: region,
       type: "FIRESTORE_NATIVE",
       deletionPolicy: "DELETE",
+      dependsOn: enabledApis,
     });
 
     // ---------------------------------------------------------------
@@ -142,6 +170,7 @@ export class ResumeApi extends Construct {
       name: "resume-api",
       location: region,
       project: projectId,
+      dependsOn: enabledApis,
       buildConfig: {
         runtime: "nodejs20",
         entryPoint: "resumeRequest",
