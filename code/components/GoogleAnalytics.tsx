@@ -30,6 +30,7 @@ export default function GoogleAnalytics() {
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
         strategy="afterInteractive"
       />
+      <Script src="https://app.secureprivacy.ai/script/6ab0b723181cc3c667619bf2.js" />
       <Script id="ga4-init" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
