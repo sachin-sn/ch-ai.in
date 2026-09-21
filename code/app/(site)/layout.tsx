@@ -12,6 +12,7 @@ import {
 } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { ThemeProvider } from "@/lib/theme/ThemeProvider";
 import { defaultTheme } from "@/lib/theme/themes";
 import "./globals.css";
@@ -143,6 +144,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
       </head>
       <body className="min-h-full flex flex-col bg-surface text-ink">
+        <GoogleAnalytics />
         <ThemeProvider>
           <Nav />
           <main className="flex-1">{children}</main>

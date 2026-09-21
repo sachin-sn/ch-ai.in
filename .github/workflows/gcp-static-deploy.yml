@@ -5,13 +5,17 @@
 # Deploys the Next.js static export (site + blog) to Firebase Hosting on GCP.
 # Runs alongside the existing AWS deploy workflow - AWS is untouched.
 #
-# Requires two repo VARIABLES (not secrets - these are identifiers, not
+# Requires three repo VARIABLES (not secrets - these are identifiers, not
 # credentials; nothing secret is stored because auth is via Workload
 # Identity Federation, no service-account key ever touches this repo):
 #   GCP_WORKLOAD_IDENTITY_PROVIDER  <- from infra-gcp-bootstrap's
 #                                      `workload_identity_provider` output
 #   GCP_DEPLOY_SERVICE_ACCOUNT      <- from infra-gcp-bootstrap's
 #                                      `deploy_service_account_email` output
+#   GA_MEASUREMENT_ID               <- GA4 Measurement ID, from linking
+#                                      Google Analytics to the Firebase
+#                                      project (console, one-time, see
+#                                      components/GoogleAnalytics.tsx)
 #
 # Settings > Secrets and variables > Actions > Variables tab (repo, not
 # environment) is where these go.
@@ -61,6 +65,11 @@ jobs:
           # widget entirely (safe by design -- see its NEXT_PUBLIC_ comment)
           # rather than erroring, which is why this was silent.
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
+          # Public GA4 Measurement ID -- see components/GoogleAnalytics.tsx.
+          # Empty until the GA_MEASUREMENT_ID repo variable is set, in
+          # which case the component just renders nothing (same
+          # fail-safe-empty pattern as the Turnstile var above).
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}
         run: npm run build
 
       - id: auth
