@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono } from "next/font/google";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./showcase.css";
 
 // A second, independent root layout (Next's "multiple root layouts"
@@ -28,6 +29,7 @@ export default function HowDidIMakeThisLayout({
   return (
     <html lang="en" className={`${plexMono.variable}`}>
       <body className="sc-body">
+        <GoogleAnalytics />
         <div className="sc-scanlines" aria-hidden="true" />
         {children}
       </body>
