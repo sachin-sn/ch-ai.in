@@ -16,6 +16,13 @@
           "functionId": "resume-api",
           "region": "asia-south1"
         }
+      },
+      {
+        "source": "/api/visit",
+        "function": {
+          "functionId": "visit-api",
+          "region": "asia-south1"
+        }
       }
     ]
   }

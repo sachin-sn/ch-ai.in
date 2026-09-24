@@ -1,0 +1,23 @@
+{
+  "name": "ch-ai-visit-api-gcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloud Function (2nd gen) behind Firebase Hosting (/api/visit) that powers the footer visit counter: POST increments a Firestore counter, GET just reads it.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && npm run package",
+    "compile": "tsc --noEmit",
+    "package": "rm -f dist.zip && node write-deploy-package-json.js && cd dist && zip -X -r ../dist.zip . && cd .."
+  },
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.2",
+    "@google-cloud/firestore": "^7.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.9.3"
+  }
+}
