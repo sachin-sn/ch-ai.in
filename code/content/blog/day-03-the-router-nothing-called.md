@@ -3,21 +3,21 @@ title: "Day 3 — The Router Nothing Called"
 date: "2026-09-24"
 excerpt: "Ported Day 2's todo API to tRPC. The router looked correct, called cleanly in isolation, and did nothing — until I actually ran it against real code."
 tags: ["30-day-challenge", "day-03", "trpc", "typescript", "zod", "bun"]
-draft: true
+draft: false
 ---
 
 Day 2 fixed the server's side of trust: bad request bodies get a
 structured 400 instead of a crash. The client calling it was still
 guessing — a plain `fetch()` has no idea what shape the server wants until
 the request is already on the wire. [tRPC](https://trpc.io) closes that:
-the client imports the server's router *type*, not its code, and gets
+the client imports the server's router _type_, not its code, and gets
 full compile-time checking on every call — no code generation step.
 
 ```ts
 export const appRouter = t.router({
   todos: {
     create: publicProcedure
-      .input(reqBody)        // Day 2's Zod schema, reused directly
+      .input(reqBody) // Day 2's Zod schema, reused directly
       .output(todoType)
       .mutation((opts) => {
         const { title, priority } = opts.input;
@@ -81,4 +81,4 @@ prediction from reading the types, not yet an observed result.
 ## What's next
 
 Day 4: Redis caching patterns. Full code for today's in the
-[repo](#) — `day-03-type-safe-apis-trpc/`.
+[repo](https://github.com/sachin-sn/30-day-learning-challenge) — `day-03-type-safe-apis-trpc/`.
