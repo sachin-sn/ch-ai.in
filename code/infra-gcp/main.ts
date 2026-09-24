@@ -8,6 +8,7 @@ import { DnsRecordSet } from "./.gen/providers/google/dns-record-set";
 import { GoogleBetaProvider } from "./.gen/providers/google-beta/provider";
 import { GoogleFirebaseProject } from "./.gen/providers/google-beta/google-firebase-project";
 import { ResumeApi } from "./resume-api";
+import { VisitApi } from "./visit-api";
 
 /**
  * infra-gcp
@@ -177,11 +178,24 @@ class GcpStaticSiteStack extends TerraformStack {
       description: "Cloudflare Turnstile secret key, from the Turnstile dashboard.",
     });
 
-    new ResumeApi(this, "resume-api", {
+    const resumeApi = new ResumeApi(this, "resume-api", {
       projectId: GCP_PROJECT_ID,
       region: GCP_REGION,
       turnstileSecretKey: turnstileSecretKey.value,
       resumeObjectKey: RESUME_OBJECT_KEY,
+    });
+
+    // ---------------------------------------------------------------
+    // visit-api: the footer visit counter. Reuses resume-api's
+    // Firestore database, source bucket and enabled APIs -- see
+    // visit-api.ts and ../gcp-functions/visit-api.
+    // ---------------------------------------------------------------
+    new VisitApi(this, "visit-api", {
+      projectId: GCP_PROJECT_ID,
+      region: GCP_REGION,
+      firestore: resumeApi.firestore,
+      sourceBucketName: resumeApi.sourceBucket.name,
+      enabledApis: resumeApi.enabledApis,
     });
   }
 }

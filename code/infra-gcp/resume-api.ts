@@ -33,6 +33,12 @@ export interface ResumeApiProps {
 export class ResumeApi extends Construct {
   public readonly resumeBucketName: string;
   public readonly resumeObjectKey: string;
+  // Exposed so sibling functions (see visit-api.ts) can share the one
+  // Firestore database, the function-source bucket and the enabled APIs
+  // instead of re-declaring them (both are singletons per project/name).
+  public readonly firestore: FirestoreDatabase;
+  public readonly sourceBucket: StorageBucket;
+  public readonly enabledApis: ProjectService[];
 
   constructor(scope: Construct, id: string, props: ResumeApiProps) {
     super(scope, id);
@@ -64,6 +70,7 @@ export class ResumeApi extends Construct {
           disableOnDestroy: false,
         }),
     );
+    this.enabledApis = enabledApis;
 
     // ---------------------------------------------------------------
     // 1. A separate, small private bucket for just the resume file --
@@ -98,6 +105,7 @@ export class ResumeApi extends Construct {
       deletionPolicy: "DELETE",
       dependsOn: enabledApis,
     });
+    this.firestore = firestore;
 
     // ---------------------------------------------------------------
     // 3. Dedicated runtime identity, scoped narrowly -- same spirit as
@@ -155,6 +163,7 @@ export class ResumeApi extends Construct {
       publicAccessPrevention: "enforced",
       forceDestroy: true,
     });
+    this.sourceBucket = sourceBucket;
 
     // Content-hashed object name -- a deploy only replaces the function's
     // source when the bundle actually changed.

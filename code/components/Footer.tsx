@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import VisitCounter from "./VisitCounter";
 
 // Maps a site route to its /howdidimakethis/<slug> write-up, for pages
 // that have one -- currently just /resume. Anything not listed here (the
@@ -20,9 +21,12 @@ export default function Footer() {
   return (
     <footer className="ledger-rule mt-24">
       <div className="mx-auto flex max-w-5xl flex-col gap-3 px-6 py-8 font-mono text-sm text-ink-dim sm:flex-row sm:items-center sm:justify-between">
-        <span className="font-display font-bold text-ink">
-          Sachin Nagaraja — © {year}
-        </span>
+        <div className="flex flex-col gap-1">
+          <span className="font-display font-bold text-ink">
+            Sachin Nagaraja — © {year}
+          </span>
+          <VisitCounter />
+        </div>
         <div className="flex gap-5">
           <a href="mailto:hello@ch-ai.in" className="hover:text-accent-bright">
             email
