@@ -12,6 +12,7 @@ import {
 } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import PageEnter from "@/components/PageEnter";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { ThemeProvider } from "@/lib/theme/ThemeProvider";
 import { defaultTheme } from "@/lib/theme/themes";
@@ -147,6 +148,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <GoogleAnalytics />
         <ThemeProvider>
           <Nav />
+          <PageEnter />
           <main className="flex-1">{children}</main>
           <Footer />
         </ThemeProvider>

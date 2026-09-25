@@ -83,4 +83,4 @@ in-flight promise map would collapse that to one.
 ## What's next
 
 Day 5: DynamoDB single-table design. Full code in the
-[repo](#) — `day-04-redis-caching-patterns/`.
+[repo](https://github.com/sachin-sn/30-day-learning-challenge/blob/main/day-04-redis-caching-patterns) — `day-04-redis-caching-patterns/`.

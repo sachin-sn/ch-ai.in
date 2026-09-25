@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { PostSummary } from "@/lib/blog/posts";
 import PostCard from "@/components/blog/PostCard";
+import { zoomBackToCard } from "@/lib/motion/expandCardToPage";
 
 const PAGE_SIZE = 6;
 
@@ -25,6 +26,10 @@ const PAGE_SIZE = 6;
 export default function BlogIndex({ posts }: { posts: PostSummary[] }) {
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Coming back from a post: zoom out onto that post's card (no-op
+  // otherwise -- see lib/motion/expandCardToPage).
+  useEffect(() => zoomBackToCard(), []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
