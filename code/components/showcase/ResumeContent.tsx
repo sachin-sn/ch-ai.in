@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Reveal from "./Reveal";
 import ResumeArchDiagram from "./ResumeArchDiagram";
+import DiagramAnimator from "./DiagramAnimator";
 
 // The write-up for /howdidimakethis/resume -- how the /resume page's
 // email-gated download actually works. Every technical claim here is
@@ -83,7 +84,9 @@ export default function ResumeContent() {
           never has to deal with CORS.
         </p>
         <div className="sc-diagram">
-          <ResumeArchDiagram />
+          <DiagramAnimator>
+            <ResumeArchDiagram />
+          </DiagramAnimator>
         </div>
         <p className="sc-diagram-caption">
           Everything in the request/response cycle is synchronous except

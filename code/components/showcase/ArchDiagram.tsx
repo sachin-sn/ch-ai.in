@@ -56,7 +56,7 @@ export default function ArchDiagram() {
         <text x="562" y="289" textAnchor="middle" fontSize="10" fill="var(--sc-ink-dim)">from a laptop</text>
 
         {/* actions -> firebase hosting (the real deploy path) */}
-        <path d="M184 146 C 300 146, 320 127, 440 127" fill="none" stroke="var(--sc-accent-bright)" strokeWidth="1.5" markerEnd="url(#sc-arrow)" />
+        <path data-flow d="M184 146 C 300 146, 320 127, 440 127" fill="none" stroke="var(--sc-accent-bright)" strokeWidth="1.5" markerEnd="url(#sc-arrow)" />
         <text x="216" y="112" fontSize="9.5" fill="var(--sc-accent)">gcp-static-deploy.yml: build, firebase deploy</text>
 
         {/* actions -.-> cdktf box (dashed: not part of the CI path) */}

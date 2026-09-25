@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Reveal from "./Reveal";
 import BlogArchDiagram from "./BlogArchDiagram";
+import DiagramAnimator from "./DiagramAnimator";
 
 // The write-up for /howdidimakethis/blog -- how the /blog ("Writing")
 // pages actually work. Every technical claim here is real, pulled from
@@ -85,7 +86,9 @@ export default function BlogContent() {
           in GCP for this feature at all.
         </p>
         <div className="sc-diagram">
-          <BlogArchDiagram />
+          <DiagramAnimator>
+            <BlogArchDiagram />
+          </DiagramAnimator>
         </div>
         <p className="sc-diagram-caption">
           Everything above the dashed box happens once, during{" "}

@@ -62,7 +62,7 @@ export default function ResumeArchDiagram() {
         <text x="643" y="160" textAnchor="middle" fontSize="9" fill="var(--sc-ink-dim)">siteverify</text>
 
         {/* visitor -> firebase hosting */}
-        <path d="M164 102 L284 57" fill="none" stroke="var(--sc-accent-bright)" strokeWidth="1.5" markerEnd="url(#sc-r-arrow)" />
+        <path data-flow d="M164 102 L284 57" fill="none" stroke="var(--sc-accent-bright)" strokeWidth="1.5" markerEnd="url(#sc-r-arrow)" />
         <text x="168" y="86" fontSize="9.5" fill="var(--sc-accent)">POST /api/resume/request</text>
 
         {/* hosting -> function (no header injected, unlike CloudFront) */}
@@ -72,7 +72,7 @@ export default function ResumeArchDiagram() {
         <path d="M369 156 L346 214" fill="none" stroke="var(--sc-ink-dim)" strokeWidth="1.3" markerEnd="url(#sc-r-arrow-dim)" />
 
         {/* function -> gcs */}
-        <path d="M429 156 L452 214" fill="none" stroke="var(--sc-accent-bright)" strokeWidth="1.5" markerEnd="url(#sc-r-arrow)" />
+        <path data-flow d="M429 156 L452 214" fill="none" stroke="var(--sc-accent-bright)" strokeWidth="1.5" markerEnd="url(#sc-r-arrow)" />
         <text x="432" y="196" fontSize="9" fill="var(--sc-accent)">sign V4 URL, 600s</text>
 
         {/* function <-> cloudflare turnstile (round trip) */}

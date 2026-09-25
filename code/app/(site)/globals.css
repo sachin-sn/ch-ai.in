@@ -427,3 +427,105 @@ body {
   border: none;
   border-top: 1px solid var(--color-surface-line);
 }
+
+/* Soft circular reveal (lib/motion/radialTransition.ts) -- used by the
+   light/dark toggle and the blog card open/close. The browser's default
+   cross-fade is turned off so only the gradient mask moves; everything
+   is scoped to html.radial-transition so other view transitions (theme
+   switch) keep their own styles. */
+@property --rt-r {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+html.radial-transition::view-transition-old(root),
+html.radial-transition::view-transition-new(root) {
+  z-index: 1;
+  animation: none;
+  mix-blend-mode: normal;
+}
+/* The masked layer shows only inside a soft circle around the origin:
+   - "radial-out": the NEW snapshot, circle grows from nothing
+   - "radial-in":  the OLD snapshot on top, circle shrinks from full
+   The starting radius is set here so the first frame, before the
+   animation begins, is already correct (no flash). */
+html.radial-transition.radial-out::view-transition-new(root),
+html.radial-transition.radial-in::view-transition-old(root) {
+  z-index: 2;
+  -webkit-mask-image: radial-gradient(
+    circle at var(--rt-x, 50%) var(--rt-y, 50%),
+    #000 calc(var(--rt-r) - var(--rt-feather)),
+    transparent var(--rt-r)
+  );
+  mask-image: radial-gradient(
+    circle at var(--rt-x, 50%) var(--rt-y, 50%),
+    #000 calc(var(--rt-r) - var(--rt-feather)),
+    transparent var(--rt-r)
+  );
+}
+html.radial-transition.radial-out::view-transition-new(root) {
+  --rt-r: 0px;
+}
+html.radial-transition.radial-in::view-transition-old(root) {
+  --rt-r: 300vmax;
+}
+/* Blog card zoom in/out fill (lib/motion/zoomTransition.ts): default
+   cross-fade off, the layer that zooms sits on top ("in": the new post
+   page; "out": the post shrinking back into its card). */
+html.zoom-transition::view-transition-old(root),
+html.zoom-transition::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  z-index: 1;
+}
+html.zoom-transition.zoom-in::view-transition-new(root) {
+  z-index: 2;
+  clip-path: var(--zt-clip);
+}
+html.zoom-transition.zoom-out::view-transition-old(root) {
+  z-index: 2;
+}
+/* Some themes ease body background/color on mode change; inside the
+   reveal that would show the old color first, so skip it while the
+   circle does the work. */
+html.mode-transition body,
+html.mode-transition body *,
+html.theme-transition body,
+html.theme-transition body * {
+  transition: none !important;
+}
+
+/* Page enter, first load only (client-side route changes use anime.js
+   via components/PageEnter). "backwards" fill, not "both": once done,
+   <main> keeps no transform, so it never becomes the containing block
+   for a theme's position: fixed backdrop. */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  body > main {
+    animation: page-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+}
+
+/* Theme switch (lib/motion/themeTransition.ts): the old theme holds
+   still while the new one dissolves in on top and rises a few px into
+   place -- slower and softer than the browser's default 0.25s
+   cross-fade, and with no mid-fade dip since the old layer stays opaque
+   underneath until the new one fully covers it. */
+@keyframes theme-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+html.theme-transition::view-transition-old(root) {
+  animation: none;
+}
+html.theme-transition::view-transition-new(root) {
+  animation: theme-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  mix-blend-mode: normal;
+}

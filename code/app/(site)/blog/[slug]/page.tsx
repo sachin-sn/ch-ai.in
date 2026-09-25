@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllSlugs, getPostBySlug } from "@/lib/blog/posts";
 import LinkedInShareButton from "@/components/LinkedInShareButton";
+import BackToWritingLink from "@/components/blog/BackToWritingLink";
+import PostReturnMarker from "@/components/blog/PostReturnMarker";
 
 const SITE_URL = "https://ch-ai.in";
 
@@ -54,12 +56,10 @@ export default async function BlogPostPage({
 
   return (
     <article className="mx-auto max-w-3xl px-6 py-16">
-      <Link
-        href="/blog"
-        className="inline-flex items-center gap-1 font-mono text-sm text-ink-dim transition hover:text-accent-bright"
-      >
+      <PostReturnMarker slug={post.slug} />
+      <BackToWritingLink slug={post.slug} className="inline-flex items-center gap-1 font-mono text-sm text-ink-dim transition hover:text-accent-bright">
         <span aria-hidden="true">&larr;</span> Back to Writing
-      </Link>
+      </BackToWritingLink>
 
       <p className="mt-8 font-mono text-sm text-ink-dim">{formatDate(post.date)}</p>
       <h1 className="mt-2 font-display text-4xl font-bold text-ink">{post.title}</h1>

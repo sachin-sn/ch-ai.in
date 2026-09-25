@@ -1,6 +1,10 @@
 "use client";
 
+import { useRef } from "react";
+import { flushSync } from "react-dom";
+import { animate } from "animejs";
 import { useTheme } from "@/lib/theme/ThemeProvider";
+import { switchModeFromPoint } from "@/lib/motion/modeTransition";
 import type { ThemeId } from "@/lib/theme/themes";
 
 // Light/dark mode toggle, rendered in the shared Nav next to
@@ -15,22 +19,43 @@ import type { ThemeId } from "@/lib/theme/themes";
 const MODE_AWARE_THEMES: ThemeId[] = ["magazine", "pixel", "material", "monochrome"];
 export default function ModeToggle() {
   const { theme, mode, setMode } = useTheme();
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const iconRef = useRef<SVGSVGElement>(null);
 
   if (!MODE_AWARE_THEMES.includes(theme)) return null;
 
+  // The new color spreads out from this button across the page
+  // (lib/motion/modeTransition); flushSync makes React commit the new
+  // mode inside the view transition's snapshot callback. The sun/moon
+  // icon then spins into place.
   function toggle() {
-    setMode(mode === "dark" ? "light" : "dark");
+    const next = mode === "dark" ? "light" : "dark";
+    const button = buttonRef.current;
+    const apply = () => flushSync(() => setMode(next));
+    // Light spreads out from the button; dark closes in onto it.
+    if (button) switchModeFromPoint(button, apply, next === "light" ? "out" : "in");
+    else apply();
+
+    if (iconRef.current && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      animate(iconRef.current, {
+        rotate: [next === "dark" ? -120 : 120, 0],
+        scale: [0.6, 1],
+        duration: 550,
+        ease: "outBack(1.6)",
+      });
+    }
   }
 
   return (
     <button
+      ref={buttonRef}
       type="button"
       className="mode-toggle"
       onClick={toggle}
       aria-label={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
       title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
     >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
+      <svg ref={iconRef} viewBox="0 0 24 24" aria-hidden="true">
         {mode === "dark" ? (
           <path
             fill="none"

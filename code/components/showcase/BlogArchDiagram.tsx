@@ -45,8 +45,8 @@ export default function BlogArchDiagram() {
         <text x="531" y="89" textAnchor="middle" fontSize="9" fill="var(--sc-ink-dim)">Open Graph tags baked in</text>
         <text x="531" y="105" textAnchor="middle" fontSize="8.5" fill="var(--sc-ink-dim)">output: &quot;export&quot;</text>
 
-        <path d="M160 61 L200 61" fill="none" stroke="var(--sc-accent-bright)" strokeWidth="1.5" markerEnd="url(#sc-b-arrow)" />
-        <path d="M390 61 L426 61" fill="none" stroke="var(--sc-accent-bright)" strokeWidth="1.5" markerEnd="url(#sc-b-arrow)" />
+        <path data-flow d="M160 61 L200 61" fill="none" stroke="var(--sc-accent-bright)" strokeWidth="1.5" markerEnd="url(#sc-b-arrow)" />
+        <path data-flow d="M390 61 L426 61" fill="none" stroke="var(--sc-accent-bright)" strokeWidth="1.5" markerEnd="url(#sc-b-arrow)" />
 
         {/* -------- row 2: existing deploy target, drawn dashed on purpose -------- */}
         <rect x="200" y="150" width="290" height="86" rx="8" fill="none" stroke="var(--sc-line)" strokeDasharray="4 3" />

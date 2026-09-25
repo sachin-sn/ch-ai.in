@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Reveal from "./Reveal";
 import ArchDiagram from "./ArchDiagram";
+import DiagramAnimator from "./DiagramAnimator";
 
 // The actual write-up for /howdidimakethis/ch-ai. Every technical claim
 // here is real, pulled from this repo's own infra/CI config (code/infra,
@@ -75,7 +76,9 @@ export default function ChAiContent() {
           at the same two GCP resources.
         </p>
         <div className="sc-diagram">
-          <ArchDiagram />
+          <DiagramAnimator>
+            <ArchDiagram />
+          </DiagramAnimator>
         </div>
         <p className="sc-diagram-caption">
           Both flows converge on the same Firebase Hosting site — one
