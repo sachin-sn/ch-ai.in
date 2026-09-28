@@ -1,4 +1,18 @@
+import type { Metadata } from "next";
 import ResumeRequestForm from "@/components/ResumeRequestForm";
+
+// Advertise the machine-readable resume so autofill agents (e.g. Claude in
+// Chrome) and ATS crawlers landing here can discover it from <head>.
+export const metadata: Metadata = {
+  alternates: {
+    types: {
+      "application/xml": [
+        { url: "/api/resume.xml", title: "Resume (XML)" },
+        { url: "/api/resume.hropen.xml", title: "Resume (HR-XML)" },
+      ],
+    },
+  },
+};
 
 export default function ResumePage() {
   return (
@@ -12,6 +26,11 @@ export default function ResumePage() {
       <div className="mt-8">
         <ResumeRequestForm />
       </div>
+      <p className="mt-10 text-sm text-ink-dim">
+        Recruiters &amp; ATS: a machine-readable version is available at{" "}
+        <a className="underline" href="/api/resume.xml">/api/resume.xml</a> (simple tags) and{" "}
+        <a className="underline" href="/api/resume.hropen.xml">/api/resume.hropen.xml</a> (HR-XML style).
+      </p>
     </div>
   );
 }
