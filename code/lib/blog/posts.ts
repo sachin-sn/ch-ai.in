@@ -56,7 +56,11 @@ export function getAllPosts(): PostSummary[] {
   return readSlugs()
     .map((slug) => ({ ...readFrontmatter(slug).data, slug }))
     .filter((post) => !post.draft)
-    .sort((a, b) => (a.date < b.date ? 1 : -1));
+    // Newest first; same-day posts fall back to slug (descending) so the
+    // order is deterministic -- e.g. day-07 before day-06 on one date.
+    .sort((a, b) =>
+      a.date === b.date ? b.slug.localeCompare(a.slug) : a.date < b.date ? 1 : -1,
+    );
 }
 
 export function getAllSlugs(): string[] {

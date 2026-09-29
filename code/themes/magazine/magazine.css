@@ -475,14 +475,18 @@ h1.mag-cover-headline {
   padding-top: 4px;
 }
 
-/* ---------------- Off the clock + specs ---------------- */
-.mag-split {
+/* ---------------- Off the clock + specs ----------------
+   Off-the-clock items sit in a row across the page; Tech Specs gets its own
+   full-width panel below with the groups flowing into a multi-column grid,
+   so a long skills list grows sideways instead of towering over the left
+   column. */
+.mag-offclock {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 28px;
+  margin-bottom: 36px;
 }
 .mag-offclock-item {
-  margin-bottom: 22px;
   padding-left: 16px;
   border-left: 2px solid var(--color-accent);
 }
@@ -503,7 +507,7 @@ h1.mag-cover-headline {
 .mag-specs {
   background: var(--color-surface-soft);
   border-radius: 14px;
-  padding: 26px;
+  padding: 28px 30px 30px;
 }
 .mag-specs .mag-specs-title {
   font-family: var(--font-mono);
@@ -511,25 +515,26 @@ h1.mag-cover-headline {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--color-highlight);
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   display: block;
 }
 .mag-specs dl {
   margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 22px 32px;
 }
 .mag-specs .mag-grp {
-  margin-bottom: 16px;
-}
-.mag-specs .mag-grp:last-child {
-  margin-bottom: 0;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--color-ink-dim) 30%, transparent);
 }
 .mag-specs dt {
   font-family: var(--font-mono);
   font-size: 0.68rem;
   text-transform: uppercase;
-  color: var(--color-ink-dim);
-  letter-spacing: 0.06em;
-  margin-bottom: 4px;
+  color: var(--color-highlight);
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
 }
 .mag-specs dd {
   margin: 0;
@@ -581,8 +586,8 @@ h1.mag-cover-headline {
   .mag-stories {
     grid-template-columns: 1fr;
   }
-  .mag-split {
-    grid-template-columns: 1fr;
+  .mag-specs {
+    padding: 22px;
   }
   .mag-toc-row {
     grid-template-columns: 60px 1fr;

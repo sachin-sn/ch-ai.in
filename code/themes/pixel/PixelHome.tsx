@@ -3,19 +3,16 @@ import Image from "next/image";
 import {
   person,
   experience,
-  featuredProjects,
   offTheClock,
   techSpecs,
+  type ProjectEntry,
 } from "@/lib/content/profile";
 import PixelIcons from "./PixelIcons";
 import TypeReveal from "./TypeReveal";
 
-// Cosmetic-only flavor data (not resume facts) keyed by the content
-// entries' existing ids, so it stays in sync if profile.ts is reordered.
-const levelStars: Record<string, number> = {
-  chitraguptha: 3,
-  ttlcache: 4,
-};
+// Cosmetic-only flavor data (not resume facts). Featured entries are the
+// latest blog posts, which change with every publish, so stars go by slot.
+const levelStars = [4, 3];
 
 const questRewards: Record<string, string> = {
   oracle: "MAX",
@@ -25,32 +22,7 @@ const questRewards: Record<string, string> = {
   tenet: "900",
 };
 
-// techSpecs.items are pre-formatted display strings (" · " separated, or
-// comma-separated with parenthetical groupings like "AWS (S3, EC2,
-// Lambda, Bedrock)"). Split into individual inventory chips without
-// breaking apart anything inside parentheses.
-function splitItems(items: string): string[] {
-  if (items.includes(" · ")) {
-    return items.split(" · ").map((s) => s.trim());
-  }
-  const parts: string[] = [];
-  let depth = 0;
-  let current = "";
-  for (const ch of items) {
-    if (ch === "(") depth += 1;
-    if (ch === ")") depth -= 1;
-    if (ch === "," && depth === 0) {
-      parts.push(current.trim());
-      current = "";
-    } else {
-      current += ch;
-    }
-  }
-  if (current.trim()) parts.push(current.trim());
-  return parts;
-}
-
-export default function PixelHome() {
+export default function PixelHome({ featured }: { featured: ProjectEntry[] }) {
   return (
     <div>
       <PixelIcons />
@@ -161,16 +133,16 @@ export default function PixelHome() {
         <section className="px-section" id="projects">
           <div className="px-section-head">
             <span className="px-num">01</span>
-            <h2>LEVEL SELECT — FEATURED PROJECTS</h2>
+            <h2>LEVEL SELECT — LATEST POSTS</h2>
             <span className="px-rule"></span>
           </div>
           <div className="px-level-grid">
-            {featuredProjects.map((project, i) => (
+            {featured.map((project, i) => (
               <article className="px-level-card" key={project.id}>
                 <div className="px-level-card-top">
                   <span className="px-level-num">{String(i + 1).padStart(2, "0")}</span>
                   <span className="px-level-stars">
-                    {Array.from({ length: levelStars[project.id] ?? 3 }).map((_, s) => (
+                    {Array.from({ length: levelStars[i] ?? 3 }).map((_, s) => (
                       <svg className="px-icon-sm" key={s}>
                         <use href="#px-i-star" />
                       </svg>
@@ -275,7 +247,7 @@ export default function PixelHome() {
               <div className="px-inv-row" key={spec.group}>
                 <div className="px-inv-group">{spec.group.toUpperCase()}</div>
                 <div className="px-inv-items">
-                  {splitItems(spec.items).map((item) => (
+                  {spec.items.map((item) => (
                     <span className="px-inv-chip" key={item}>
                       {item}
                     </span>

@@ -3,41 +3,14 @@ import Link from "next/link";
 import {
   person,
   experience,
-  featuredProjects,
   offTheClock,
   techSpecs,
+  type ProjectEntry,
 } from "@/lib/content/profile";
 import MonochromeIcons from "./MonochromeIcons";
 import MonoReveal from "./MonoReveal";
 
-// techSpecs.items are pre-formatted display strings (" · " separated, or
-// comma-separated with parenthetical groupings like "AWS (S3, EC2,
-// Lambda, Bedrock)"). Split into individual entries without breaking
-// apart anything inside parentheses, then rejoin with " / " to match
-// Mono's spec-sheet voice. Same helper as themes/pixel/PixelHome.tsx and
-// themes/material/MaterialHome.tsx.
-function splitItems(items: string): string[] {
-  if (items.includes(" · ")) {
-    return items.split(" · ").map((s) => s.trim());
-  }
-  const parts: string[] = [];
-  let depth = 0;
-  let current = "";
-  for (const ch of items) {
-    if (ch === "(") depth += 1;
-    if (ch === ")") depth -= 1;
-    if (ch === "," && depth === 0) {
-      parts.push(current.trim());
-      current = "";
-    } else {
-      current += ch;
-    }
-  }
-  if (current.trim()) parts.push(current.trim());
-  return parts;
-}
-
-export default function MonochromeHome() {
+export default function MonochromeHome({ featured }: { featured: ProjectEntry[] }) {
   return (
     <div>
       <MonochromeIcons />
@@ -104,13 +77,7 @@ export default function MonochromeHome() {
               Currently: <b>Oracle</b>
             </span>
             <span>
-              Case studies:{" "}
-              {featuredProjects.map((project, i) => (
-                <span key={project.id}>
-                  {i > 0 && " & "}
-                  <b>{project.title}</b>
-                </span>
-              ))}
+              Latest post: <b>{featured[0]?.title ?? "coming soon"}</b>
             </span>
           </MonoReveal>
         </div>
@@ -138,11 +105,11 @@ export default function MonochromeHome() {
         <section className="mo-section" id="projects">
           <MonoReveal as="div" className="mo-section-head">
             <span className="mo-section-num">N&deg; 02</span>
-            <h2>Featured Projects</h2>
+            <h2>Latest Writing</h2>
             <span className="mo-section-rule" />
           </MonoReveal>
           <MonoReveal as="div" className="mo-stagger">
-            {featuredProjects.map((project, i) => (
+            {featured.map((project, i) => (
               <article className="mo-project-row" key={project.id}>
                 <div className="mo-project-index">{String(i + 1).padStart(2, "0")}</div>
                 <div>
@@ -150,7 +117,7 @@ export default function MonochromeHome() {
                   <h3>{project.title}</h3>
                   <p>{project.description}</p>
                   <Link className="mo-project-link" href={project.slug}>
-                    Read the case study
+                    Read the post
                     <svg className="mo-icon-sm" aria-hidden="true">
                       <use href="#mo-i-arrow" />
                     </svg>
@@ -222,7 +189,7 @@ export default function MonochromeHome() {
             {techSpecs.map((spec) => (
               <div className="mo-specs-row" key={spec.group}>
                 <div className="mo-specs-label">{spec.group}</div>
-                <div className="mo-specs-value">{splitItems(spec.items).join(" / ")}</div>
+                <div className="mo-specs-value">{spec.items.join(" / ")}</div>
               </div>
             ))}
           </MonoReveal>
