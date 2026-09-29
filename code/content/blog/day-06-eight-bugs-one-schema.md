@@ -1,6 +1,6 @@
 ---
 title: "Day 6 — Eight Bugs, One Schema"
-date: "2026-09-28"
+date: "2026-09-27"
 excerpt: "GraphQL Yoga on Bun. The schema looked right at every single step — it just kept being wrong in a new place each time I actually ran it."
 tags: ["30-day-challenge", "day-06", "graphql", "graphql-yoga", "zod", "bun"]
 draft: false
