@@ -3,13 +3,13 @@ import Reveal from "@/components/Reveal";
 import {
   person,
   experience,
-  featuredProjects,
   offTheClock,
   techSpecs,
+  type ProjectEntry,
 } from "@/lib/content/profile";
 import ParallaxCoverPhoto from "./ParallaxCoverPhoto";
 
-export default function MagazineHome() {
+export default function MagazineHome({ featured }: { featured: ProjectEntry[] }) {
   return (
     <div>
       <div className="mag-cover-outer">
@@ -64,9 +64,9 @@ export default function MagazineHome() {
                 <li>
                   <a href="#projects">
                     <span className="mag-t-label">
-                      Case studies: Chitraguptha &amp; TTL Cache
+                      Latest from the blog: {featured[0]?.title ?? "Writing"}
                     </span>
-                    <span className="mag-t-tag">Projects</span>
+                    <span className="mag-t-tag">Writing</span>
                   </a>
                 </li>
               </ul>
@@ -114,13 +114,13 @@ export default function MagazineHome() {
             <span className="mag-rule-flex" />
           </div>
           <div className="mag-stories">
-            {featuredProjects.map((project) => (
+            {featured.map((project) => (
               <article className="mag-story" key={project.id}>
                 <div className="mag-kicker">{project.kicker}</div>
                 <h3>{project.title}</h3>
                 <p>{project.description}</p>
                 <Link className="mag-read" href={project.slug}>
-                  Read the case study →
+                  Read the post →
                 </Link>
               </article>
             ))}
@@ -163,26 +163,24 @@ export default function MagazineHome() {
             <h2>Off The Clock &amp; The Specs</h2>
             <span className="mag-rule-flex" />
           </div>
-          <div className="mag-split">
-            <div>
-              {offTheClock.map((item) => (
-                <div className="mag-offclock-item" key={item.id}>
-                  <h4>{item.title}</h4>
-                  <p>{item.description}</p>
+          <div className="mag-offclock">
+            {offTheClock.map((item) => (
+              <div className="mag-offclock-item" key={item.id}>
+                <h4>{item.title}</h4>
+                <p>{item.description}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mag-specs">
+            <span className="mag-specs-title">Tech Specs</span>
+            <dl>
+              {techSpecs.map((spec) => (
+                <div className="mag-grp" key={spec.group}>
+                  <dt>{spec.group}</dt>
+                  <dd>{spec.items.join(" · ")}</dd>
                 </div>
               ))}
-            </div>
-            <div className="mag-specs">
-              <span className="mag-specs-title">Tech Specs</span>
-              <dl>
-                {techSpecs.map((spec) => (
-                  <div className="mag-grp" key={spec.group}>
-                    <dt>{spec.group}</dt>
-                    <dd>{spec.items}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
+            </dl>
           </div>
         </Reveal>
       </div>

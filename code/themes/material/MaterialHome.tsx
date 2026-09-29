@@ -3,40 +3,15 @@ import Link from "next/link";
 import {
   person,
   experience,
-  featuredProjects,
   offTheClock,
   techSpecs,
+  type ProjectEntry,
 } from "@/lib/content/profile";
 import MaterialIcons from "./MaterialIcons";
 
-// techSpecs.items are pre-formatted display strings (" · " separated, or
-// comma-separated with parenthetical groupings like "AWS (S3, EC2,
-// Lambda, Bedrock)"). Split into individual chips without breaking apart
-// anything inside parentheses. Same helper as themes/pixel/PixelHome.tsx.
-function splitItems(items: string): string[] {
-  if (items.includes(" · ")) {
-    return items.split(" · ").map((s) => s.trim());
-  }
-  const parts: string[] = [];
-  let depth = 0;
-  let current = "";
-  for (const ch of items) {
-    if (ch === "(") depth += 1;
-    if (ch === ")") depth -= 1;
-    if (ch === "," && depth === 0) {
-      parts.push(current.trim());
-      current = "";
-    } else {
-      current += ch;
-    }
-  }
-  if (current.trim()) parts.push(current.trim());
-  return parts;
-}
-
 const projectBarColors = ["terracotta", "sage"] as const;
 
-export default function MaterialHome() {
+export default function MaterialHome({ featured }: { featured: ProjectEntry[] }) {
   return (
     <div>
       <MaterialIcons />
@@ -193,11 +168,11 @@ export default function MaterialHome() {
           </div>
           <div className="m-section-inner">
             <div className="m-section-head">
-              <p className="m-section-eyebrow">Selected work</p>
-              <h2>Featured projects</h2>
+              <p className="m-section-eyebrow">Latest writing</p>
+              <h2>From the blog</h2>
             </div>
             <div className="m-project-grid">
-              {featuredProjects.map((project, i) => (
+              {featured.map((project, i) => (
                 <article className="m-project-card m-elev-1" key={project.id}>
                   <div className={`m-project-bar ${projectBarColors[i % projectBarColors.length]}`} />
                   <div className="m-project-body">
@@ -205,7 +180,7 @@ export default function MaterialHome() {
                     <h3>{project.title}</h3>
                     <p>{project.description}</p>
                     <Link className="m-project-link" href={project.slug}>
-                      Read the case study
+                      Read the post
                       <svg className="m-icon-sm" aria-hidden="true">
                         <use href="#m-i-arrow" />
                       </svg>
@@ -335,7 +310,7 @@ export default function MaterialHome() {
                 <div className="m-specs-group" key={spec.group}>
                   <div className="m-specs-label">{spec.group}</div>
                   <div className="m-chip-cloud">
-                    {splitItems(spec.items).map((item) => (
+                    {spec.items.map((item) => (
                       <span className="m-tech-chip" key={item}>
                         {item}
                       </span>

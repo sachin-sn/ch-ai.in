@@ -113,6 +113,9 @@ export type ProjectEntry = {
   description: string;
 };
 
+// Not shown on the homepage right now -- the featured slot renders the
+// latest blog posts (lib/blog/featured.ts) until these case-study pages are
+// built. Swap back in app/(site)/page.tsx when they are.
 export const featuredProjects: ProjectEntry[] = [
   {
     id: "chitraguptha",
@@ -159,10 +162,23 @@ export const offTheClock: SideProject[] = [
   },
 ];
 
-export const techSpecs: { group: string; items: string }[] = [
-  { group: "Primary Stack", items: "MongoDB · Express.js · React.js · Node.js" },
-  { group: "Languages", items: "JavaScript, TypeScript, C#, HTML/CSS" },
-  { group: "Cloud & AI", items: "AWS (S3, EC2, Lambda, Bedrock), Prompt Engineering" },
-  { group: "Data", items: "MS SQL, MySQL, DynamoDB" },
-  { group: "Tooling", items: "Git, GitHub Actions, Docker" },
+// Single source for the "Tech Specs" block — every theme (magazine, pixel,
+// material, monochrome) renders this same list, each in its own voice.
+// Items are individual entries (one chip / one token each); themes join or
+// chip them as they see fit, so keep each item self-contained.
+export type TechSpec = { group: string; items: string[] };
+
+export const techSpecs: TechSpec[] = [
+  { group: "Specialisation", items: ["Application Modernisation", "Legacy Migration", "Cloud Migration", "Frontend Framework Migration"] },
+  { group: "Primary Stack", items: ["MongoDB", "Express.js", "React.js", "Node.js"] },
+  { group: "Languages", items: ["TypeScript", "JavaScript", "C#", "SQL", "HTML/CSS"] },
+  { group: "Frontend", items: ["Next.js", "AngularJS", "Tailwind CSS", "Accessibility (a11y)", "Responsive Design", "UI Performance"] },
+  { group: "Backend & APIs", items: ["ASP.NET Web API", "REST", "GraphQL", "Microservices"] },
+  { group: "Cloud", items: ["AWS (S3, EC2, Lambda, CloudFront, Route 53, Bedrock)", "GCP (Firebase, Cloud Functions)", "Oracle Cloud"] },
+  { group: "AI", items: ["Generative AI", "RAG", "Agentic AI", "Prompt Engineering", "Claude Code", "OpenAI Codex"] },
+  { group: "Data", items: ["DynamoDB", "MS SQL", "MySQL"] },
+  { group: "Testing & Quality", items: ["Jest", "Cypress", "Playwright", "Selenium", "ESLint", "Load Testing", "RCA"] },
+  { group: "DevOps & IaC", items: ["Git", "GitHub Actions", "CI/CD", "Docker", "Terraform CDK"] },
+  { group: "Practices", items: ["Software Architecture", "Solution Design", "Distributed Systems", "Agile / Scrum", "Scrum Master"] },
+  { group: "Now Learning", items: ["Bun", "Zod", "tRPC", "Redis", "Kafka"] },
 ];
