@@ -6,6 +6,7 @@ import ResumeRequestForm from "@/components/ResumeRequestForm";
 export const metadata: Metadata = {
   alternates: {
     types: {
+      "application/json": [{ url: "/api/resume.json", title: "Resume (JSON Resume)" }],
       "application/xml": [
         { url: "/api/resume.xml", title: "Resume (XML)" },
         { url: "/api/resume.hropen.xml", title: "Resume (HR-XML)" },
@@ -28,6 +29,7 @@ export default function ResumePage() {
       </div>
       <p className="mt-10 text-sm text-ink-dim">
         Recruiters &amp; ATS: a machine-readable version is available at{" "}
+        <a className="underline" href="/api/resume.json">/api/resume.json</a> (JSON Resume),{" "}
         <a className="underline" href="/api/resume.xml">/api/resume.xml</a> (simple tags) and{" "}
         <a className="underline" href="/api/resume.hropen.xml">/api/resume.hropen.xml</a> (HR-XML style).
       </p>
