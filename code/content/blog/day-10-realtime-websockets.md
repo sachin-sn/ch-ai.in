@@ -15,8 +15,6 @@ dead-letter queue, no redelivery, nothing to replay from. That trade-off
 turned out to be the easy part to understand. The hard part was a test
 that looked like it passed when it hadn't actually tested anything.
 
-![WebSocket broadcast, targeted delivery, and a heartbeat timing out an unresponsive client](day-10-realtime-websockets.gif)
-
 ## Broadcast, and a mistake that turned out to be useful
 
 Three terminals, one server, one `create-todo` command typed into any
