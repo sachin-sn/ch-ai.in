@@ -12,6 +12,7 @@ import {
   Caveat,
   Patrick_Hand,
   Sora,
+  Fredoka,
 } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
@@ -26,6 +27,7 @@ import "@/themes/material/material.css";
 import "@/themes/monochrome/monochrome.css";
 import "@/themes/sketch/sketch.css";
 import "@/themes/glass/glass.css";
+import "@/themes/clay/clay.css";
 
 // Newsreader + IBM Plex Mono: the original "Ink & Brass" pairing, kept as
 // the default/fallback theme's type.
@@ -119,6 +121,15 @@ const sora = Sora({
   weight: ["400", "600", "700"],
 });
 
+// Clay theme's type: Fredoka (round, chunky, friendly -- letterforms that
+// look modelled rather than drawn) for headings; body copy reuses the
+// already-loaded --font-nunito.
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Sachin — building things",
   description: "Personal portfolio, project case studies, and writing.",
@@ -130,7 +141,7 @@ export const metadata: Metadata = {
 // theme when nothing is stored yet. The mode fallback is per-theme rather
 // than a single constant: magazine, pixel, and glass were designed dark-first (that
 // remains their default the first time a visitor shows up with no stored
-// preference), while material, monochrome, and sketch were designed light-first --
+// preference), while material, monochrome, sketch, and clay were designed light-first --
 // once someone explicitly toggles a mode, that choice is stored and wins
 // regardless of theme, same as ModeToggle's own behavior after mount.
 const noFlashThemeScript = `
@@ -142,7 +153,7 @@ const noFlashThemeScript = `
   } catch (e) {}
   document.documentElement.setAttribute("data-theme", theme);
 
-  var lightFirstThemes = ["material", "monochrome", "sketch"];
+  var lightFirstThemes = ["material", "monochrome", "sketch", "clay"];
   var defaultMode = lightFirstThemes.indexOf(theme) === -1 ? "dark" : "light";
   var mode = defaultMode;
   try {
@@ -169,7 +180,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       data-theme={defaultTheme}
       data-mode="dark"
       suppressHydrationWarning
-      className={`${newsreader.variable} ${plexMono.variable} ${fraunces.variable} ${spaceGrotesk.variable} ${inter.variable} ${pressStart2p.variable} ${vt323.variable} ${lora.variable} ${nunito.variable} ${caveat.variable} ${patrickHand.variable} ${sora.variable} h-full antialiased`}
+      className={`${newsreader.variable} ${plexMono.variable} ${fraunces.variable} ${spaceGrotesk.variable} ${inter.variable} ${pressStart2p.variable} ${vt323.variable} ${lora.variable} ${nunito.variable} ${caveat.variable} ${patrickHand.variable} ${sora.variable} ${fredoka.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
