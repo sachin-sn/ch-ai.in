@@ -20,28 +20,49 @@ function loadMermaid() {
   return mermaidPromise;
 }
 
-/** Resolve a CSS custom property to a plain hex colour Mermaid can parse. */
-function token(name: string, fallback: string): string {
+/** Resolve a CSS custom property to the computed colour string. */
+function resolveColor(name: string): string {
   const probe = document.createElement("span");
   probe.style.color = `var(${name})`;
   probe.style.display = "none";
   document.body.appendChild(probe);
   const resolved = getComputedStyle(probe).color;
   probe.remove();
-  const ctx = document.createElement("canvas").getContext("2d");
+  return resolved;
+}
+
+/**
+ * Resolve a CSS custom property to a plain, opaque hex colour Mermaid can
+ * parse. Some themes (glass) use translucent tokens like
+ * rgba(255,255,255,0.5) for panels -- Mermaid can't use those (and its
+ * derived shades go wrong), so the colour is painted onto a 1x1 canvas
+ * over `base` (the page surface) and the composited pixel is read back.
+ * That also flattens any colour syntax the canvas understands (color-mix,
+ * oklch, ...) to hex.
+ */
+function token(name: string, fallback: string, base = "#ffffff"): string {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 1;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) return fallback;
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, 1, 1);
   ctx.fillStyle = fallback;
-  ctx.fillStyle = resolved; // ignored if the browser can't parse it
-  return ctx.fillStyle.startsWith("#") ? ctx.fillStyle : fallback;
+  ctx.fillStyle = resolveColor(name); // ignored if the browser can't parse it
+  ctx.fillRect(0, 0, 1, 1);
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+  return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 }
 
 function themeVariables() {
+  // Surface first (flattened over white, in case it is ever translucent),
+  // then every other token composited over that surface.
   const surface = token("--color-surface", "#12100e");
-  const panel = token("--color-surface-panel", "#1c1916");
-  const ink = token("--color-ink", "#ede6d8");
-  const dim = token("--color-ink-dim", "#a89e8c");
-  const accent = token("--color-accent", "#b8863b");
-  const bright = token("--color-accent-bright", "#d4a256");
+  const panel = token("--color-surface-panel", "#1c1916", surface);
+  const ink = token("--color-ink", "#ede6d8", surface);
+  const dim = token("--color-ink-dim", "#a89e8c", surface);
+  const accent = token("--color-accent", "#b8863b", surface);
+  const bright = token("--color-accent-bright", "#d4a256", surface);
   const mode = document.documentElement.getAttribute("data-mode");
   return {
     darkMode: mode !== "light",

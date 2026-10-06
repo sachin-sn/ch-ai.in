@@ -1,0 +1,821 @@
+/*
+  Glassmorphism theme -- frosted panes floating over a slowly drifting
+  aurora. Designed dark-first (glass glows best against a night sky); the
+  light mode swaps in a pastel dawn.
+
+  The aurora is painted once, site-wide, on body::before (four big blurred
+  colour fields that drift on a long loop) with a film-grain layer on
+  body::after, so every page -- blog, blueprints, resume -- sits on it.
+  For the fixed layers to show, body's own background is made transparent
+  (html keeps --color-surface as the base colour underneath).
+
+  Same three-part split as the other themes:
+  (1) token overrides for [data-theme="glass"] (dark) and
+      [data-theme="glass"][data-mode="light"]. Panel/soft/line tokens are
+      translucent here, so any shared component using bg-surface-panel
+      (blog cards, etc.) is tinted glass for free -- and the rule below
+      gives every .bg-surface-panel a backdrop blur to finish the effect;
+  (2) a reskin of the shared chrome: the nav becomes a floating glass bar,
+      the footer a glass slab, the appearance pill a glass capsule;
+  (3) the gl-* classes used only by themes/glass/GlassHome.tsx.
+
+  .gl-glass is the one pane recipe: translucent fill + backdrop blur, a
+  hairline edge that is brighter at the top (light from above), a soft
+  drop shadow, and two pointer-tracked layers (useGlassGlare.ts writes
+  --mx/--my): ::after a broad glare across the face, ::before a brighter
+  rim along the edge nearest the cursor.
+*/
+
+[data-theme="glass"] {
+  --color-surface: #0a0a1a;
+  --color-surface-panel: rgba(255, 255, 255, 0.07);
+  --color-surface-soft: rgba(255, 255, 255, 0.1);
+  --color-surface-line: rgba(255, 255, 255, 0.16);
+  --color-ink: #f4f3ff;
+  --color-ink-dim: #b6b4d4;
+  --color-accent: #8b7dff;
+  --color-accent-bright: #b3a8ff;
+  --color-accent-deep: #6a5cf0;
+  --color-highlight: #4fe0d0;
+
+  --font-display: var(--font-sora), system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
+
+  /* theme-only tokens */
+  --gl-fill: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+  --gl-edge: rgba(255, 255, 255, 0.18);
+  --gl-edge-top: rgba(255, 255, 255, 0.42);
+  --gl-shadow: rgba(4, 2, 20, 0.55);
+  --gl-glare: rgba(255, 255, 255, 0.11);
+  --gl-rim: rgba(255, 255, 255, 0.75);
+  --gl-blur: 22px;
+  --gl-ring-fill: rgba(22, 20, 44, 0.86);
+  --gl-a1: #7b5cff;
+  --gl-a2: #22d3ee;
+  --gl-a3: #ff4fa3;
+  --gl-a4: #ffb44f;
+  --gl-aurora-opacity: 0.6;
+  --gl-grain-opacity: 0.07;
+  --gl-gradient: linear-gradient(100deg, #b3a8ff 0%, #6ee7f9 35%, #ff8bc6 70%, #b3a8ff 100%);
+}
+
+[data-theme="glass"][data-mode="light"] {
+  --color-surface: #eef0fa;
+  --color-surface-panel: rgba(255, 255, 255, 0.5);
+  --color-surface-soft: rgba(255, 255, 255, 0.65);
+  --color-surface-line: rgba(40, 40, 100, 0.14);
+  --color-ink: #16162b;
+  --color-ink-dim: #545470;
+  --color-accent: #5b4be0;
+  --color-accent-bright: #6d5df2;
+  --color-accent-deep: #3f31b8;
+  --color-highlight: #0e9a9a;
+
+  --gl-fill: linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.38));
+  --gl-edge: rgba(255, 255, 255, 0.75);
+  --gl-edge-top: rgba(255, 255, 255, 1);
+  --gl-shadow: rgba(60, 50, 140, 0.22);
+  --gl-ring-fill: rgba(250, 250, 255, 0.88);
+  --gl-glare: rgba(255, 255, 255, 0.55);
+  --gl-rim: rgba(255, 255, 255, 1);
+  --gl-a1: #a596ff;
+  --gl-a2: #7fe3f3;
+  --gl-a3: #ffa6cf;
+  --gl-a4: #ffd59a;
+  --gl-aurora-opacity: 0.75;
+  --gl-grain-opacity: 0.05;
+  --gl-gradient: linear-gradient(100deg, #5b4be0 0%, #0e9ab0 40%, #d63e8c 75%, #5b4be0 100%);
+}
+
+/* ---------------- the aurora backdrop (site-wide) ---------------- */
+[data-theme="glass"] body {
+  background: transparent;
+  transition: color 0.25s ease;
+}
+[data-theme="glass"] body::before {
+  content: "";
+  position: fixed;
+  inset: -20vmax;
+  z-index: -2;
+  pointer-events: none;
+  opacity: var(--gl-aurora-opacity);
+  background:
+    radial-gradient(38vmax 32vmax at 18% 22%, var(--gl-a1), transparent 62%),
+    radial-gradient(34vmax 30vmax at 82% 18%, var(--gl-a2), transparent 62%),
+    radial-gradient(40vmax 34vmax at 70% 82%, var(--gl-a3), transparent 62%),
+    radial-gradient(30vmax 26vmax at 22% 85%, var(--gl-a4), transparent 62%);
+  filter: blur(40px) saturate(120%);
+  animation: gl-drift 38s ease-in-out infinite alternate;
+}
+[data-theme="glass"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--gl-grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@keyframes gl-drift {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  50% { transform: translate3d(4vmax, -3vmax, 0) rotate(8deg) scale(1.08); }
+  100% { transform: translate3d(-3vmax, 4vmax, 0) rotate(-6deg) scale(1.02); }
+}
+[data-theme="glass"] ::selection {
+  background: color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+
+/* any shared panel (blog cards, etc.) becomes frosted glass too */
+[data-theme="glass"] .bg-surface-panel {
+  backdrop-filter: blur(var(--gl-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--gl-blur)) saturate(160%);
+  border-radius: 20px;
+  border-color: var(--gl-edge);
+  box-shadow: inset 0 1px 0 var(--gl-edge-top), 0 20px 50px -24px var(--gl-shadow);
+}
+
+/* ---------------- the pane recipe ---------------- */
+[data-theme="glass"] .gl-glass {
+  position: relative;
+  background: var(--gl-fill);
+  backdrop-filter: blur(var(--gl-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--gl-blur)) saturate(160%);
+  border: 1px solid var(--gl-edge);
+  border-radius: 24px;
+  box-shadow:
+    inset 0 1px 0 var(--gl-edge-top),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 24px 60px -28px var(--gl-shadow);
+}
+[data-theme="glass"] .gl-glass::before,
+[data-theme="glass"] .gl-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+/* broad glare across the face */
+[data-theme="glass"] .gl-glass::after {
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), var(--gl-glare), transparent 45%);
+}
+/* bright rim on the edge nearest the cursor (1px ring via mask) */
+[data-theme="glass"] .gl-glass::before {
+  padding: 1px;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), var(--gl-rim), transparent 60%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+[data-theme="glass"] .gl-glass:hover::before,
+[data-theme="glass"] .gl-glass:hover::after { opacity: 1; }
+
+.gl-icon { width: 18px; height: 18px; display: inline-block; flex: none; }
+
+/* ---------------- shared chrome reskin ---------------- */
+[data-theme="glass"] .site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 12px 16px 0;
+  background: transparent;
+  border-bottom: none;
+}
+[data-theme="glass"] .site-nav > div {
+  background: var(--gl-fill);
+  backdrop-filter: blur(var(--gl-blur)) saturate(170%);
+  -webkit-backdrop-filter: blur(var(--gl-blur)) saturate(170%);
+  border: 1px solid var(--gl-edge);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 var(--gl-edge-top), 0 16px 40px -24px var(--gl-shadow);
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+[data-theme="glass"] .site-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+[data-theme="glass"] .site-nav nav a,
+[data-theme="glass"] .nav-burger-links {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.92rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+[data-theme="glass"] .site-nav nav a {
+  padding: 6px 12px;
+  border-radius: 999px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+[data-theme="glass"] .site-nav nav a:hover {
+  background: var(--color-surface-soft);
+  color: var(--color-ink);
+}
+[data-theme="glass"] .site-nav nav ul { gap: 4px; }
+[data-theme="glass"] .nav-burger-panel {
+  left: 16px;
+  right: 16px;
+  top: calc(100% + 8px);
+  background: var(--gl-fill);
+  backdrop-filter: blur(var(--gl-blur)) saturate(170%);
+  -webkit-backdrop-filter: blur(var(--gl-blur)) saturate(170%);
+  border: 1px solid var(--gl-edge);
+  border-radius: 24px;
+  box-shadow: inset 0 1px 0 var(--gl-edge-top), 0 24px 50px -20px var(--gl-shadow);
+}
+[data-theme="glass"] .theme-switch {
+  border-color: var(--gl-edge);
+  background: var(--color-surface-soft);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+[data-theme="glass"] .theme-switch .theme-cycle-icon {
+  background: var(--gl-gradient);
+  background-size: 200% 100%;
+  color: #0a0a1a;
+}
+[data-theme="glass"] .theme-switch .mode-toggle { border-radius: 999px; }
+[data-theme="glass"] footer.ledger-rule {
+  border-top: none;
+  padding: 0 16px;
+}
+[data-theme="glass"] footer.ledger-rule > div:first-child {
+  background: var(--gl-fill);
+  backdrop-filter: blur(var(--gl-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--gl-blur)) saturate(160%);
+  border: 1px solid var(--gl-edge);
+  border-radius: 24px;
+  box-shadow: inset 0 1px 0 var(--gl-edge-top);
+}
+
+/* blog prose */
+[data-theme="glass"] .blog-prose h2,
+[data-theme="glass"] .blog-prose h3 { letter-spacing: -0.02em; }
+[data-theme="glass"] .blog-prose pre {
+  background: rgba(10, 10, 26, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: var(--gl-edge);
+  border-radius: 16px;
+}
+[data-theme="glass"][data-mode="light"] .blog-prose pre { background: rgba(255, 255, 255, 0.6); }
+[data-theme="glass"] .blog-prose blockquote {
+  font-style: normal;
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-surface-panel);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 0 16px 16px 0;
+  padding: 0.75em 1.1em;
+}
+[data-theme="glass"] .blog-prose img { border-radius: 18px; }
+
+/* ---------------- motion: condensing into focus ---------------- */
+[data-theme="glass"] .gl-reveal,
+[data-theme="glass"] .gl-stagger > * {
+  opacity: 0;
+  filter: blur(14px);
+  transform: translateY(18px) scale(0.98);
+  transition:
+    opacity 0.8s ease,
+    filter 0.9s ease,
+    transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* end on filter/transform "none" (not blur(0)) so nested backdrop-filter
+   panes go back to sampling the real aurora once the reveal finishes */
+[data-theme="glass"] .gl-reveal.in,
+[data-theme="glass"] .gl-stagger.in > * {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+[data-theme="glass"] .gl-stagger.in > *:nth-child(2) { transition-delay: 0.08s; }
+[data-theme="glass"] .gl-stagger.in > *:nth-child(3) { transition-delay: 0.16s; }
+[data-theme="glass"] .gl-stagger.in > *:nth-child(4) { transition-delay: 0.24s; }
+[data-theme="glass"] .gl-stagger.in > *:nth-child(5) { transition-delay: 0.32s; }
+[data-theme="glass"] .gl-stagger.in > *:nth-child(6) { transition-delay: 0.4s; }
+[data-theme="glass"] .gl-stagger.in > *:nth-child(n + 7) { transition-delay: 0.48s; }
+
+/* ---------------- hero ---------------- */
+[data-theme="glass"] .gl-hero {
+  padding-top: 72px;
+  padding-bottom: 40px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 64px;
+  align-items: center;
+  min-height: min(82vh, 760px);
+}
+[data-theme="glass"] .gl-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-ink);
+  margin-bottom: 26px;
+}
+[data-theme="glass"] .gl-live {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6);
+  animation: gl-pulse 2s ease-out infinite;
+}
+@keyframes gl-pulse {
+  70% { box-shadow: 0 0 0 9px rgba(52, 211, 153, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+[data-theme="glass"] .gl-hero-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.8rem, 6.4vw, 4.7rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  margin: 0 0 24px;
+  color: var(--color-ink);
+}
+[data-theme="glass"] .gl-gradient-text {
+  display: inline-block;
+  background: var(--gl-gradient);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gl-sheen 8s linear infinite;
+  padding-bottom: 0.06em;
+}
+@keyframes gl-sheen { to { background-position: -200% 0; } }
+[data-theme="glass"] .gl-hero-sub {
+  font-size: 1.15rem;
+  line-height: 1.65;
+  color: var(--color-ink-dim);
+  max-width: 52ch;
+  margin: 0 0 32px;
+}
+[data-theme="glass"] .gl-btn-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+[data-theme="glass"] .gl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 24px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.98rem;
+  color: var(--color-ink);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+[data-theme="glass"] .gl-btn:hover { transform: translateY(-2px); }
+[data-theme="glass"] .gl-btn-primary {
+  color: #fff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 55%),
+    linear-gradient(120deg, var(--color-accent-deep), var(--color-accent) 55%, #3fb8e8);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 12px 30px -10px color-mix(in srgb, var(--color-accent) 70%, transparent);
+}
+[data-theme="glass"] .gl-btn-primary:hover {
+  box-shadow: 0 18px 40px -10px color-mix(in srgb, var(--color-accent) 85%, transparent);
+}
+[data-theme="glass"] .gl-btn-primary .gl-icon { transition: transform 0.2s ease; }
+[data-theme="glass"] .gl-btn-primary:hover .gl-icon { transform: translateX(3px); }
+[data-theme="glass"] .gl-btn-sm { padding: 10px 18px; font-size: 0.9rem; }
+[data-theme="glass"] .gl-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+[data-theme="glass"] .gl-chip {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-ink-dim);
+  background: var(--color-surface-panel);
+  border: 1px solid var(--color-surface-line);
+}
+
+/* portrait lens + floating badges */
+[data-theme="glass"] .gl-portrait-col { position: relative; }
+[data-theme="glass"] .gl-portrait {
+  padding: 12px;
+  border-radius: 32px;
+}
+[data-theme="glass"] .gl-portrait-frame {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: 22px;
+  overflow: hidden;
+}
+[data-theme="glass"] .gl-portrait-frame img { filter: saturate(1.05) contrast(1.02); }
+[data-theme="glass"] .gl-portrait-frame::after {
+  /* a faint glossy reflection across the photo */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 38%);
+  pointer-events: none;
+}
+[data-theme="glass"] .gl-portrait-caption {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 8px 2px;
+  font-size: 0.85rem;
+  color: var(--color-ink-dim);
+}
+[data-theme="glass"] .gl-portrait-caption span:first-child { color: var(--color-ink); font-weight: 600; }
+[data-theme="glass"] .gl-float {
+  position: absolute;
+  z-index: 2;
+  padding: 9px 16px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  color: var(--color-ink);
+  /* the badges overlap the (mostly white) photo, so they need a deeper
+     tint than a regular pane to keep their text legible over it */
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04)),
+    color-mix(in srgb, var(--color-surface) 62%, transparent);
+  animation: gl-bob 6s ease-in-out infinite;
+}
+[data-theme="glass"] .gl-float b { font-family: var(--font-display); font-weight: 700; }
+[data-theme="glass"] .gl-float-a { top: 12%; left: -64px; }
+[data-theme="glass"] .gl-float-b { top: 46%; right: -48px; animation-delay: -2s; }
+[data-theme="glass"] .gl-float-c { bottom: 14%; left: -40px; animation-delay: -4s; }
+@keyframes gl-bob {
+  50% { transform: translateY(-10px); }
+}
+
+/* latest-post status bar */
+[data-theme="glass"] .gl-status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-radius: 18px;
+  color: var(--color-ink);
+}
+[data-theme="glass"] .gl-status-tag {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--color-highlight);
+  background: color-mix(in srgb, var(--color-highlight) 14%, transparent);
+}
+[data-theme="glass"] .gl-status-title {
+  flex: 1;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------- sections ---------------- */
+[data-theme="glass"] .gl-section { padding: 56px 0 8px; }
+[data-theme="glass"] .gl-section-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 30px;
+}
+[data-theme="glass"] .gl-section-num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-accent-bright);
+}
+[data-theme="glass"] .gl-section-head h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.8rem, 3.6vw, 2.4rem);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--color-ink);
+}
+[data-theme="glass"] .gl-section-head p { margin: 4px 0 0; color: var(--color-ink-dim); font-size: 0.95rem; }
+[data-theme="glass"] .gl-section-line {
+  flex: 1;
+  height: 1px;
+  min-width: 40px;
+  background: linear-gradient(90deg, var(--color-surface-line), transparent);
+}
+
+/* bio + hire card with an animated conic border */
+[data-theme="glass"] .gl-bio {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 36px;
+  padding: 36px;
+  border-radius: 28px;
+  align-items: center;
+}
+[data-theme="glass"] .gl-bio-text {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.65;
+  color: var(--color-ink);
+}
+@property --gl-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+[data-theme="glass"] .gl-hire,
+[data-theme="glass"] .gl-role.is-current {
+  --gl-angle: 0deg;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--gl-ring-fill), var(--gl-ring-fill)) padding-box,
+    conic-gradient(from var(--gl-angle), var(--gl-a1), var(--gl-a2), var(--gl-a3), var(--gl-a1)) border-box;
+  animation: gl-spin 6s linear infinite;
+}
+@keyframes gl-spin { to { --gl-angle: 360deg; } }
+[data-theme="glass"] .gl-hire {
+  position: relative;
+  z-index: 1;
+  padding: 24px;
+  border-radius: 22px;
+}
+[data-theme="glass"] .gl-hire-title {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+  color: var(--color-ink);
+}
+[data-theme="glass"] .gl-hire p { margin: 0 0 16px; color: var(--color-ink-dim); line-height: 1.55; font-size: 0.95rem; }
+
+/* writing cards */
+[data-theme="glass"] .gl-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+[data-theme="glass"] .gl-card {
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  color: var(--color-ink);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease;
+}
+[data-theme="glass"] .gl-card:hover {
+  transform: translateY(-4px);
+  box-shadow: inset 0 1px 0 var(--gl-edge-top), 0 34px 70px -28px var(--gl-shadow);
+}
+[data-theme="glass"] .gl-card-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+  margin-bottom: 12px;
+}
+[data-theme="glass"] .gl-card h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 10px;
+}
+[data-theme="glass"] .gl-card p { margin: 0 0 22px; color: var(--color-ink-dim); line-height: 1.6; flex: 1; }
+[data-theme="glass"] .gl-card-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+[data-theme="glass"] .gl-round-arrow {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--gl-edge);
+  transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+}
+[data-theme="glass"] .gl-card:hover .gl-round-arrow {
+  transform: rotate(-45deg);
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* career */
+[data-theme="glass"] .gl-timeline {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  padding-left: 34px;
+}
+[data-theme="glass"] .gl-timeline::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--gl-a1), var(--gl-a2), var(--gl-a3), transparent);
+  opacity: 0.7;
+}
+[data-theme="glass"] .gl-role {
+  padding: 22px 26px;
+  border-radius: 22px;
+}
+[data-theme="glass"] .gl-role.is-current {
+  backdrop-filter: blur(var(--gl-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--gl-blur)) saturate(160%);
+}
+[data-theme="glass"] .gl-role-dot {
+  position: absolute;
+  left: -32px;
+  top: 28px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent-bright);
+}
+[data-theme="glass"] .is-current .gl-role-dot {
+  background: var(--color-accent-bright);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-accent) 30%, transparent), 0 0 18px var(--color-accent);
+}
+[data-theme="glass"] .gl-role-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+[data-theme="glass"] .gl-role h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: var(--color-ink);
+}
+[data-theme="glass"] .gl-role-company { font-size: 0.92rem; color: var(--color-accent-bright); font-weight: 500; }
+[data-theme="glass"] .gl-role-years {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-ink-dim);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-surface-panel);
+  border: 1px solid var(--color-surface-line);
+}
+[data-theme="glass"] .gl-role ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-ink-dim);
+  line-height: 1.6;
+  font-size: 0.95rem;
+  list-style: disc;
+}
+[data-theme="glass"] .gl-role li::marker { color: var(--color-accent-bright); }
+
+/* off the clock: tiles with a coloured orb refracted through the glass */
+[data-theme="glass"] .gl-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+[data-theme="glass"] .gl-tile {
+  overflow: hidden;
+  padding: 26px;
+  min-height: 210px;
+}
+[data-theme="glass"] .gl-orb {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  filter: blur(24px);
+  opacity: 0.75;
+  z-index: -1;
+  transition: transform 0.6s ease;
+}
+[data-theme="glass"] .gl-tile:hover .gl-orb { transform: translate(-20px, 20px) scale(1.15); }
+[data-theme="glass"] .gl-orb-violet .gl-orb { background: var(--gl-a1); }
+[data-theme="glass"] .gl-orb-cyan .gl-orb { background: var(--gl-a2); }
+[data-theme="glass"] .gl-orb-pink .gl-orb { background: var(--gl-a3); }
+[data-theme="glass"] .gl-tile { isolation: isolate; }
+[data-theme="glass"] .gl-tile h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.12rem;
+  margin: 46px 0 8px;
+  color: var(--color-ink);
+}
+[data-theme="glass"] .gl-tile p { margin: 0; color: var(--color-ink-dim); line-height: 1.55; font-size: 0.93rem; }
+
+/* tech specs bento */
+[data-theme="glass"] .gl-bento {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: 16px;
+}
+[data-theme="glass"] .gl-bento-tile {
+  padding: 20px 22px;
+  border-radius: 20px;
+}
+[data-theme="glass"] .gl-bento-tile.is-wide { grid-column: span 2; }
+[data-theme="glass"] .gl-bento-label {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  color: var(--color-ink);
+}
+[data-theme="glass"] .gl-bento-tile ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+[data-theme="glass"] .gl-bento-tile li {
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: var(--color-ink-dim);
+  background: var(--color-surface-panel);
+  border: 1px solid var(--color-surface-line);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+[data-theme="glass"] .gl-bento-tile li:hover { color: var(--color-ink); border-color: var(--color-accent-bright); }
+
+/* ---------------- responsive ---------------- */
+@media (max-width: 860px) {
+  [data-theme="glass"] .gl-hero {
+    grid-template-columns: 1fr;
+    gap: 56px;
+    min-height: 0;
+    padding-top: 48px;
+  }
+  [data-theme="glass"] .gl-portrait-col { width: min(280px, 72vw); margin: 0 auto; }
+  [data-theme="glass"] .gl-float-a { left: -40px; }
+  [data-theme="glass"] .gl-float-b { right: -36px; }
+  [data-theme="glass"] .gl-float-c { left: -24px; }
+  [data-theme="glass"] .gl-bio { grid-template-columns: 1fr; padding: 26px; }
+  [data-theme="glass"] .gl-card-grid,
+  [data-theme="glass"] .gl-tile-grid { grid-template-columns: 1fr; }
+  [data-theme="glass"] .gl-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  [data-theme="glass"] .gl-bento { grid-template-columns: 1fr; }
+  [data-theme="glass"] .gl-bento-tile.is-wide { grid-column: auto; }
+  [data-theme="glass"] .gl-role-head { flex-direction: column; gap: 8px; }
+  [data-theme="glass"] .gl-timeline { padding-left: 26px; }
+  [data-theme="glass"] .gl-role-dot { left: -24px; }
+  [data-theme="glass"] .gl-timeline::before { left: 5px; }
+  [data-theme="glass"] .gl-float { font-size: 0.78rem; padding: 7px 12px; }
+  [data-theme="glass"] .gl-float-a { left: -28px; }
+  [data-theme="glass"] .gl-float-b { right: -24px; }
+  [data-theme="glass"] .gl-float-c { left: -16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="glass"] body::before,
+  [data-theme="glass"] .gl-gradient-text,
+  [data-theme="glass"] .gl-float,
+  [data-theme="glass"] .gl-live,
+  [data-theme="glass"] .gl-hire,
+  [data-theme="glass"] .gl-role.is-current { animation: none; }
+  [data-theme="glass"] .gl-reveal,
+  [data-theme="glass"] .gl-stagger > * { opacity: 1; filter: none; transform: none; transition: none; }
+}
