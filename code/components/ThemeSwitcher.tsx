@@ -11,7 +11,7 @@ import ModeToggle from "./ModeToggle";
 // toggle (ModeToggle) and the theme button. The theme button shows the current
 // theme's name, and each click moves to the next available theme in
 // registry order (lib/theme/themes.ts), wrapping from the last back to the
-// first -- Magazine → Pixel → Material → Mono → Sketch → Glass → Clay → Magazine … The cycle icon
+// first -- Magazine → Pixel → Material → Mono → Sketch → Glass → Clay → Bento → Magazine … The cycle icon
 // spins a full turn on every click.
 export default function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
