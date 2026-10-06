@@ -187,7 +187,7 @@ const noFlashThemeScript = `
 // legitimately differ from what the browser already shows by then.
 // suppressHydrationWarning on the element is the standard fix for that
 // exact pattern (see e.g. next-themes' own docs); data-mode gets a static
-// "dark" default matching the default theme's (magazine) traditional
+// "dark" default matching the default theme's (glass, dark-first)
 // look, so server and first-paint-before-script markup agree whenever
 // nothing has run the script yet (e.g. with JS disabled).
 export default function RootLayout({ children }: LayoutProps<"/">) {
