@@ -23,7 +23,9 @@ export const themes: ThemeMeta[] = [
   { id: "bento", label: "Bento", available: true },
 ];
 
-export const defaultTheme: ThemeId = "magazine";
+// What a first-time visitor sees (no stored choice yet). Glass is
+// dark-first, which matches the static data-mode="dark" in layout.tsx.
+export const defaultTheme: ThemeId = "glass";
 
 export const availableThemeIds: ThemeId[] = themes
   .filter((t) => t.available)
