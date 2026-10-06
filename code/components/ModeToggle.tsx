@@ -11,12 +11,12 @@ import type { ThemeId } from "@/lib/theme/themes";
 // appears in the shared Nav -- and, on mobile, a second time inside
 // MobileMenu's dropdown panel). Only visible while the active theme actually defines a
 // [data-theme="<id>"][data-mode="dark"] palette -- magazine, pixel,
-// material, monochrome, sketch, glass, clay, and bento all do. Mode itself lives in ThemeProvider's
+// material, monochrome, sketch, glass, clay, bento, and swiss all do. Mode itself lives in ThemeProvider's
 // shared context (not local state here) precisely because two instances
 // of this component can be mounted at once (desktop row + mobile panel);
 // reading/writing through context keeps them in sync the same way
 // ThemeSwitcher's theme already does.
-const MODE_AWARE_THEMES: ThemeId[] = ["magazine", "pixel", "material", "monochrome", "sketch", "glass", "clay", "bento"];
+const MODE_AWARE_THEMES: ThemeId[] = ["magazine", "pixel", "material", "monochrome", "sketch", "glass", "clay", "bento", "swiss"];
 export default function ModeToggle() {
   const { theme, mode, setMode } = useTheme();
   const buttonRef = useRef<HTMLButtonElement>(null);

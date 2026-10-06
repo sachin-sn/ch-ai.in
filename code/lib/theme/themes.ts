@@ -4,7 +4,7 @@
 // from the others. Adding a theme = adding one entry here plus its folder;
 // nothing else in the app needs to change.
 
-export type ThemeId = "magazine" | "pixel" | "material" | "monochrome" | "sketch" | "glass" | "clay" | "bento";
+export type ThemeId = "magazine" | "pixel" | "material" | "monochrome" | "sketch" | "glass" | "clay" | "bento" | "swiss";
 
 export type ThemeMeta = {
   id: ThemeId;
@@ -21,6 +21,7 @@ export const themes: ThemeMeta[] = [
   { id: "glass", label: "Glass", available: true },
   { id: "clay", label: "Clay", available: true },
   { id: "bento", label: "Bento", available: true },
+  { id: "swiss", label: "Swiss", available: true },
 ];
 
 // What a first-time visitor sees (no stored choice yet). Glass is
