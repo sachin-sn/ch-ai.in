@@ -8,10 +8,11 @@ import MonochromeHome from "@/themes/monochrome/MonochromeHome";
 import SketchHome from "@/themes/sketch/SketchHome";
 import GlassHome from "@/themes/glass/GlassHome";
 import ClayHome from "@/themes/clay/ClayHome";
+import BentoHome from "@/themes/bento/BentoHome";
 import type { ProjectEntry } from "@/lib/content/profile";
 
 // Renders the homepage for whichever theme is active: "magazine",
-// "pixel", "material", "monochrome", "sketch", "glass", and "clay" are all built.
+// "pixel", "material", "monochrome", "sketch", "glass", "clay", and "bento" are all built.
 // `featured` is the latest blog posts, read at build time by the server
 // page (app/(site)/page.tsx) and passed through to every theme.
 export default function HomeThemed({ featured }: { featured: ProjectEntry[] }) {
@@ -30,6 +31,8 @@ export default function HomeThemed({ featured }: { featured: ProjectEntry[] }) {
       return <GlassHome featured={featured} />;
     case "clay":
       return <ClayHome featured={featured} />;
+    case "bento":
+      return <BentoHome featured={featured} />;
     case "magazine":
     default:
       return <MagazineHome featured={featured} />;
