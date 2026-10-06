@@ -193,11 +193,10 @@
   border: 2px solid var(--color-surface-line);
   font-size: 0.95rem;
 }
-[data-theme="pixel"] .theme-switch button {
+[data-theme="pixel"] .theme-switch .theme-cycle-icon,
+[data-theme="pixel"] .theme-switch .mode-toggle,
+[data-theme="pixel"] .theme-switch .theme-cycle {
   border-radius: 0;
-}
-[data-theme="pixel"] .theme-switch button.active {
-  color: var(--color-surface);
 }
 
 /* ---------------- shared primitives ---------------- */

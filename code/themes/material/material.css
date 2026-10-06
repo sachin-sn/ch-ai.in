@@ -97,8 +97,8 @@
   border: 1px solid var(--color-surface-line);
   background: var(--color-surface-soft);
 }
-[data-theme="material"] .theme-switch button.active {
-  background: var(--color-accent); color: #fffaf3;
+[data-theme="material"] .theme-switch .theme-cycle-icon {
+  color: #fffaf3;
 }
 
 /* ---------------- ambient boho background decoration ---------------- */

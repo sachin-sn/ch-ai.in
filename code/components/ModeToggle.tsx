@@ -7,9 +7,9 @@ import { useTheme } from "@/lib/theme/ThemeProvider";
 import { switchModeFromPoint } from "@/lib/motion/modeTransition";
 import type { ThemeId } from "@/lib/theme/themes";
 
-// Light/dark mode toggle, rendered in the shared Nav next to
-// ThemeSwitcher -- and, on mobile, a second time inside MobileMenu's
-// dropdown panel. Only visible while the active theme actually defines a
+// Light/dark mode toggle, rendered inside ThemeSwitcher's pill (so it
+// appears in the shared Nav -- and, on mobile, a second time inside
+// MobileMenu's dropdown panel). Only visible while the active theme actually defines a
 // [data-theme="<id>"][data-mode="dark"] palette -- magazine, pixel,
 // material, and monochrome all do. Mode itself lives in ThemeProvider's
 // shared context (not local state here) precisely because two instances

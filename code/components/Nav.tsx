@@ -1,10 +1,10 @@
 import Link from "next/link";
 import ThemeSwitcher from "./ThemeSwitcher";
-import ModeToggle from "./ModeToggle";
 import MobileMenu from "./MobileMenu";
 
 const links = [
   { href: "/blog", label: "writing" },
+  { href: "/blueprints", label: "blueprints" },
   { href: "/resume", label: "resume" },
 ];
 
@@ -42,7 +42,6 @@ export default function Nav() {
             </ul>
           </nav>
           <div className="flex items-center gap-3">
-            <ModeToggle />
             <ThemeSwitcher />
           </div>
         </div>

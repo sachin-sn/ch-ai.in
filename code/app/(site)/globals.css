@@ -189,16 +189,18 @@ body {
   gap: 12px;
   flex-wrap: wrap;
 }
-.nav-burger-controls .theme-switch {
-  flex-wrap: wrap;
-}
 
-/* Shared theme-switcher pill control — themed via the semantic tokens so
-   it looks native inside whichever theme is active. */
+
+/* Shared appearance pill (components/ThemeSwitcher.tsx): the light/dark
+   toggle, a divider, then the theme button -- current theme name + a
+   cycle icon that spins a full turn per click. Themed via the semantic
+   tokens so it looks native inside whichever theme is active. */
 .theme-switch {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   gap: 4px;
-  padding: 4px;
+  height: 40px;
+  padding: 0 5px;
   border: 1px solid var(--color-surface-line);
   border-radius: 999px;
   font-family: var(--font-mono);
@@ -206,25 +208,61 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-.theme-switch button {
+.theme-switch .mode-toggle {
+  width: 30px;
+  height: 30px;
   border: none;
   background: transparent;
-  padding: 6px 12px;
-  cursor: pointer;
-  color: var(--color-ink-dim);
-  font: inherit;
-  border-radius: 999px;
-}
-.theme-switch button.active {
-  background: var(--color-accent);
-  color: var(--color-surface);
-}
-.theme-switch button:not(.active):not(:disabled):hover {
   color: var(--color-ink);
 }
-.theme-switch button:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
+.theme-switch .mode-toggle:hover {
+  background: var(--color-surface-line);
+}
+.theme-switch .mode-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+.theme-switch-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--color-surface-line);
+}
+.theme-cycle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 1px 0 8px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.theme-cycle:hover .theme-cycle-icon {
+  background: var(--color-accent-bright);
+}
+.theme-cycle-label {
+  min-width: 4.6em; /* widest label ("Magazine") -- no jiggle on switch */
+  text-align: left;
+}
+.theme-cycle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-surface);
+  transition: transform 0.6s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.theme-cycle-icon svg {
+  width: 15px;
+  height: 15px;
 }
 
 /* Scroll-reveal utility, shared across themes. Default is fade-up;
@@ -528,4 +566,490 @@ html.theme-transition::view-transition-old(root) {
 html.theme-transition::view-transition-new(root) {
   animation: theme-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   mix-blend-mode: normal;
+}
+
+/* Tables in Markdown content (blog posts and blueprints). Wide tables
+   scroll sideways inside their own box instead of widening the page. */
+.blog-prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+.blog-prose th,
+.blog-prose td {
+  border-bottom: 1px solid var(--color-surface-line);
+  padding: 0.55em 0.9em 0.55em 0;
+  text-align: left;
+  vertical-align: top;
+}
+.blog-prose th {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-dim);
+}
+
+/* ------------------------------------------------------------------ */
+/* Blueprints (/blueprints): system design slide deck.                 */
+/* Only semantic tokens, so every theme and mode reskins it for free.  */
+/* ------------------------------------------------------------------ */
+
+.deck-slide {
+  position: relative;
+}
+
+/* Each numbered section of a design reads as a "panel" of the slide. */
+.blueprint-prose h2 {
+  padding-top: 1.5em;
+  border-top: 1px solid var(--color-surface-line);
+}
+
+/* Mermaid diagrams (components/blueprints/MermaidDiagrams.tsx). */
+.blueprint-diagram {
+  margin: 1.75em 0;
+  padding: 1.25rem;
+  border: 1px solid var(--color-surface-line);
+  border-radius: 0.75rem;
+  background: var(--color-surface-panel);
+  overflow-x: auto;
+  text-align: center;
+}
+/* Wide screens: diagrams break out of the 48rem text column (staying
+   clear of the side arrows) so wide flowcharts keep a readable size. */
+@media (min-width: 1100px) {
+  .blueprint-diagram {
+    width: max(100%, min(1100px, calc(100vw - 340px)));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+}
+.blueprint-diagram svg {
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+.blueprint-diagram[aria-busy="true"] {
+  min-height: 8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.blueprint-diagram[aria-busy="true"] pre {
+  display: none;
+}
+.blueprint-diagram[aria-busy="true"]::before {
+  content: "Drawing diagram…";
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-ink-dim);
+}
+.blueprint-diagram.is-error {
+  text-align: left;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+/* Index: "start" button and the design cards. */
+.deck-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-surface);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: background 0.15s ease;
+}
+.deck-start:hover {
+  background: var(--color-accent-bright);
+}
+
+.blueprint-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+@media (min-width: 640px) {
+  .blueprint-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.blueprint-card {
+  display: flex;
+  gap: 1rem;
+  height: 100%;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--color-surface-line);
+  border-radius: 0.75rem;
+  background: var(--color-surface-soft);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.blueprint-card:hover,
+.blueprint-card:focus-visible {
+  border-color: var(--color-accent-bright);
+  transform: translateY(-2px);
+}
+.blueprint-card-num {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  line-height: 1.4;
+  color: var(--color-accent-bright);
+}
+.blueprint-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.blueprint-card-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-ink);
+}
+.blueprint-card-topic {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--color-ink-dim);
+}
+.blueprint-card-meta {
+  margin-top: auto;
+  padding-top: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-ink-dim);
+}
+
+/* Top of a slide: back link, a dot per design, position. */
+.deck-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+.deck-home {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-ink-dim);
+  transition: color 0.15s ease;
+}
+.deck-home:hover {
+  color: var(--color-accent-bright);
+}
+.deck-dots {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+}
+@media (max-width: 520px) {
+  /* Phones: the bottom bar already gives prev/next; dots would wrap. */
+  .deck-dots {
+    visibility: hidden;
+  }
+}
+.deck-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  min-width: 14px;
+}
+.deck-dot::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--color-surface-line);
+  transition: background 0.15s ease, width 0.2s ease;
+}
+.deck-dot:hover::before {
+  background: var(--color-ink-dim);
+}
+.deck-dot[aria-current="page"]::before {
+  width: 20px;
+  background: var(--color-accent-bright);
+}
+.deck-count {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-ink-dim);
+}
+
+/* Side arrows: wide screens only, fixed to the viewport edges. */
+.deck-arrow {
+  display: none;
+}
+@media (min-width: 1280px) {
+  .deck-arrow {
+    position: fixed;
+    /* Pin the round button itself to the vertical centre, so both arrows
+       line up whatever the length of their titles. */
+    top: calc(50% - 26px);
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    width: 120px;
+    color: var(--color-ink-dim);
+  }
+  .deck-arrow--prev {
+    left: 20px;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .deck-arrow--next {
+    right: 20px;
+    align-items: flex-end;
+    text-align: right;
+  }
+}
+.deck-arrow-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid var(--color-surface-line);
+  background: var(--color-surface-soft);
+  color: var(--color-ink);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.deck-arrow-btn svg {
+  width: 22px;
+  height: 22px;
+}
+.deck-arrow:hover .deck-arrow-btn,
+.deck-arrow:focus-visible .deck-arrow-btn {
+  border-color: var(--color-accent-bright);
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+.deck-arrow-num {
+  margin-top: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.deck-arrow-title {
+  margin-top: 0.15rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-ink);
+}
+/* "What's inside" pops out on hover/focus. */
+.deck-arrow-topic {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  width: 220px;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--color-surface-line);
+  border-radius: 0.6rem;
+  background: var(--color-surface-panel);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--color-ink);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.deck-arrow--prev .deck-arrow-topic {
+  left: 0;
+}
+.deck-arrow--next .deck-arrow-topic {
+  right: 0;
+}
+.deck-arrow:hover .deck-arrow-topic,
+.deck-arrow:focus-visible .deck-arrow-topic {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Compact bar pinned to the bottom of the viewport below 1280px. */
+.deck-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  border-top: 1px solid var(--color-surface-line);
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  backdrop-filter: blur(8px);
+}
+@media (min-width: 1280px) {
+  .deck-bar {
+    display: none;
+  }
+}
+.deck-bar-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 0.6rem 1rem;
+}
+.deck-bar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  min-height: 40px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-ink);
+  transition: color 0.15s ease;
+}
+.deck-bar-link:hover {
+  color: var(--color-accent-bright);
+}
+.deck-bar-link--next {
+  justify-content: flex-end;
+  text-align: right;
+}
+.deck-bar-link svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+.deck-bar-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.deck-bar-num {
+  color: var(--color-accent-bright);
+}
+.deck-bar-count {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-ink-dim);
+}
+
+/* End-of-slide pager. */
+.deck-pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-surface-line);
+}
+.deck-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--color-surface-line);
+  border-radius: 0.75rem;
+  transition: border-color 0.15s ease;
+}
+.deck-card:hover,
+.deck-card:focus-visible {
+  border-color: var(--color-accent-bright);
+}
+.deck-card--next {
+  text-align: right;
+}
+.deck-card-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-accent-bright);
+}
+.deck-card-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.deck-card-topic {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--color-ink-dim);
+}
+@media (max-width: 640px) {
+  .deck-pager {
+    grid-template-columns: 1fr;
+  }
+  .deck-pager > span[aria-hidden="true"] {
+    display: none;
+  }
+}
+
+/* Blueprint slide transition (lib/motion/deckTransition.ts): the old
+   slide slides out as the new one slides in, like a carousel. Forward
+   (a later slide) moves left; back moves right. The site header and the
+   deck's arrow buttons and bottom bar are lifted out of the root snapshot (their own
+   view-transition-name) so they stay put while the page slides. */
+html.deck-transition .site-nav {
+  view-transition-name: deck-site-nav;
+}
+/* Only the round buttons stay put; their labels name a different
+   neighbour on each slide, so they slide along with their page. */
+html.deck-transition .deck-arrow--prev .deck-arrow-btn {
+  view-transition-name: deck-arrow-prev;
+}
+html.deck-transition .deck-arrow--next .deck-arrow-btn {
+  view-transition-name: deck-arrow-next;
+}
+html.deck-transition .deck-bar {
+  view-transition-name: deck-bar;
+}
+html.deck-transition::view-transition-old(root),
+html.deck-transition::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  animation-fill-mode: both;
+}
+html.deck-transition.deck-forward::view-transition-old(root) {
+  animation-name: deck-out-left;
+}
+html.deck-transition.deck-forward::view-transition-new(root) {
+  animation-name: deck-in-right;
+}
+html.deck-transition.deck-back::view-transition-old(root) {
+  animation-name: deck-out-right;
+}
+html.deck-transition.deck-back::view-transition-new(root) {
+  animation-name: deck-in-left;
+}
+@keyframes deck-out-left {
+  to {
+    transform: translateX(-100%);
+    opacity: 0.4;
+  }
+}
+@keyframes deck-out-right {
+  to {
+    transform: translateX(100%);
+    opacity: 0.4;
+  }
+}
+@keyframes deck-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes deck-in-left {
+  from {
+    transform: translateX(-100%);
+  }
 }
