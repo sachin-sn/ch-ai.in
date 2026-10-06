@@ -11,6 +11,7 @@ import {
   Nunito,
   Caveat,
   Patrick_Hand,
+  Sora,
 } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
@@ -24,6 +25,7 @@ import "@/themes/pixel/pixel.css";
 import "@/themes/material/material.css";
 import "@/themes/monochrome/monochrome.css";
 import "@/themes/sketch/sketch.css";
+import "@/themes/glass/glass.css";
 
 // Newsreader + IBM Plex Mono: the original "Ink & Brass" pairing, kept as
 // the default/fallback theme's type.
@@ -108,6 +110,15 @@ const patrickHand = Patrick_Hand({
   weight: "400",
 });
 
+// Glass theme's type: Sora (a crisp, geometric display face with tight
+// apertures that reads well over blurred colour) for headings; body copy
+// reuses the already-loaded --font-inter.
+const sora = Sora({
+  variable: "--font-sora",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Sachin — building things",
   description: "Personal portfolio, project case studies, and writing.",
@@ -117,7 +128,7 @@ export const metadata: Metadata = {
 // localStorage keys ThemeProvider/ModeToggle use) so switching themes or
 // modes never flashes the wrong one on reload. Falls back to the default
 // theme when nothing is stored yet. The mode fallback is per-theme rather
-// than a single constant: magazine and pixel were designed dark-first (that
+// than a single constant: magazine, pixel, and glass were designed dark-first (that
 // remains their default the first time a visitor shows up with no stored
 // preference), while material, monochrome, and sketch were designed light-first --
 // once someone explicitly toggles a mode, that choice is stored and wins
@@ -158,7 +169,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       data-theme={defaultTheme}
       data-mode="dark"
       suppressHydrationWarning
-      className={`${newsreader.variable} ${plexMono.variable} ${fraunces.variable} ${spaceGrotesk.variable} ${inter.variable} ${pressStart2p.variable} ${vt323.variable} ${lora.variable} ${nunito.variable} ${caveat.variable} ${patrickHand.variable} h-full antialiased`}
+      className={`${newsreader.variable} ${plexMono.variable} ${fraunces.variable} ${spaceGrotesk.variable} ${inter.variable} ${pressStart2p.variable} ${vt323.variable} ${lora.variable} ${nunito.variable} ${caveat.variable} ${patrickHand.variable} ${sora.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />

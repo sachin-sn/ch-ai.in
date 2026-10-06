@@ -4,7 +4,7 @@
 // from the others. Adding a theme = adding one entry here plus its folder;
 // nothing else in the app needs to change.
 
-export type ThemeId = "magazine" | "pixel" | "material" | "monochrome" | "sketch";
+export type ThemeId = "magazine" | "pixel" | "material" | "monochrome" | "sketch" | "glass";
 
 export type ThemeMeta = {
   id: ThemeId;
@@ -18,6 +18,7 @@ export const themes: ThemeMeta[] = [
   { id: "material", label: "Material", available: true },
   { id: "monochrome", label: "Mono", available: true },
   { id: "sketch", label: "Sketch", available: true },
+  { id: "glass", label: "Glass", available: true },
 ];
 
 export const defaultTheme: ThemeId = "magazine";
