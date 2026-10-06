@@ -32,21 +32,21 @@ The text uses ASD-STE100 Simplified Technical English rules:
 | 14 | `14-end-to-end-encryption.md` | End-to-end encryption (Signal Protocol, as used by WhatsApp) |
 | 15 | `15-realtime-react-dashboard.md` | Large real-time dashboard in React that stays stable under constant updates |
 | 16 | `16-data-transfer-fast-to-slow-server.md` | Transfer a large file from a fast server to a slow server |
+| 17 | `17-ride-hailing-uber.md` | Ride-hailing service (Uber, Ola) |
+| 18 | `18-ticket-booking-bookmyshow.md` | Ticket booking system (BookMyShow) |
+| 19 | `19-unique-id-generator.md` | Distributed unique ID generator (Snowflake) |
 
 ## Other frequently asked questions
 
 Use the same method to prepare for these questions:
 
-1. **Ride-hailing service (Uber, Ola).** Location updates, geo-index (geohash, quadtree), driver matching.
-2. **Distributed cache (Redis, Memcached).** Consistent hashing, eviction, replication.
-3. **Search autocomplete.** Trie, top-K queries, prefix cache.
-4. **Payment system.** Idempotency keys, ledger, reconciliation, exactly-once effect.
-5. **Collaborative editor (Google Docs).** Operational transformation (OT) or CRDT.
-6. **Unique ID generator.** Snowflake IDs, clock skew.
-7. **Web crawler.** URL frontier, politeness, duplicate detection.
-8. **Ticket booking (BookMyShow).** Seat lock, concurrency control, payment timeout.
-9. **File storage and sync (Dropbox, Google Drive).** Chunking, deduplication, sync conflicts.
-10. **Leaderboard.** Redis sorted sets, sharded counters.
+1. **Distributed cache (Redis, Memcached).** Consistent hashing, eviction, replication.
+2. **Search autocomplete.** Trie, top-K queries, prefix cache.
+3. **Payment system.** Idempotency keys, ledger, reconciliation, exactly-once effect.
+4. **Collaborative editor (Google Docs).** Operational transformation (OT) or CRDT.
+5. **Web crawler.** URL frontier, politeness, duplicate detection.
+6. **File storage and sync (Dropbox, Google Drive).** Chunking, deduplication, sync conflicts.
+7. **Leaderboard.** Redis sorted sets, sharded counters.
 
 ## A standard method for each interview answer
 

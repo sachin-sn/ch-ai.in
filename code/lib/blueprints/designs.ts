@@ -38,6 +38,9 @@ const SHORT_TITLES: Record<string, string> = {
   "end-to-end-encryption": "End-to-End Encryption",
   "realtime-react-dashboard": "Real-Time React Dashboard",
   "data-transfer-fast-to-slow-server": "Fast-to-Slow File Transfer",
+  "ride-hailing-uber": "Ride-Hailing (Uber, Ola)",
+  "ticket-booking-bookmyshow": "Ticket Booking (BookMyShow)",
+  "unique-id-generator": "Unique ID Generator",
 };
 
 // Sections of 00-index.md that are notes for the author, not for readers
