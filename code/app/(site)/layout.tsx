@@ -9,6 +9,8 @@ import {
   VT323,
   Lora,
   Nunito,
+  Caveat,
+  Patrick_Hand,
 } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
@@ -21,6 +23,7 @@ import "@/themes/magazine/magazine.css";
 import "@/themes/pixel/pixel.css";
 import "@/themes/material/material.css";
 import "@/themes/monochrome/monochrome.css";
+import "@/themes/sketch/sketch.css";
 
 // Newsreader + IBM Plex Mono: the original "Ink & Brass" pairing, kept as
 // the default/fallback theme's type.
@@ -89,6 +92,22 @@ const nunito = Nunito({
   weight: ["400", "500", "600", "700", "800"],
 });
 
+// Sketch theme's type: Caveat (a quick, confident marker hand) for
+// headings and annotations, Patrick Hand (a neater, more legible print
+// hand) for body copy so long blog posts stay readable. Patrick Hand only
+// ships weight 400.
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["500", "700"],
+});
+
+const patrickHand = Patrick_Hand({
+  variable: "--font-patrick-hand",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   title: "Sachin — building things",
   description: "Personal portfolio, project case studies, and writing.",
@@ -100,7 +119,7 @@ export const metadata: Metadata = {
 // theme when nothing is stored yet. The mode fallback is per-theme rather
 // than a single constant: magazine and pixel were designed dark-first (that
 // remains their default the first time a visitor shows up with no stored
-// preference), while material and monochrome were designed light-first --
+// preference), while material, monochrome, and sketch were designed light-first --
 // once someone explicitly toggles a mode, that choice is stored and wins
 // regardless of theme, same as ModeToggle's own behavior after mount.
 const noFlashThemeScript = `
@@ -112,7 +131,7 @@ const noFlashThemeScript = `
   } catch (e) {}
   document.documentElement.setAttribute("data-theme", theme);
 
-  var lightFirstThemes = ["material", "monochrome"];
+  var lightFirstThemes = ["material", "monochrome", "sketch"];
   var defaultMode = lightFirstThemes.indexOf(theme) === -1 ? "dark" : "light";
   var mode = defaultMode;
   try {
@@ -139,7 +158,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       data-theme={defaultTheme}
       data-mode="dark"
       suppressHydrationWarning
-      className={`${newsreader.variable} ${plexMono.variable} ${fraunces.variable} ${spaceGrotesk.variable} ${inter.variable} ${pressStart2p.variable} ${vt323.variable} ${lora.variable} ${nunito.variable} h-full antialiased`}
+      className={`${newsreader.variable} ${plexMono.variable} ${fraunces.variable} ${spaceGrotesk.variable} ${inter.variable} ${pressStart2p.variable} ${vt323.variable} ${lora.variable} ${nunito.variable} ${caveat.variable} ${patrickHand.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
