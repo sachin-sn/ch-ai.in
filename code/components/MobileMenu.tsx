@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ThemeSwitcher from "./ThemeSwitcher";
-import ModeToggle from "./ModeToggle";
 
 type NavLink = { href: string; label: string };
 
@@ -81,7 +80,6 @@ export default function MobileMenu({ links }: { links: NavLink[] }) {
             </ul>
           </nav>
           <div className="nav-burger-controls">
-            <ModeToggle />
             <ThemeSwitcher />
           </div>
         </div>

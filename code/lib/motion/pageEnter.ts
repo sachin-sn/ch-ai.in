@@ -1,5 +1,6 @@
 import { animate } from "animejs";
 import { blogTransitionPending } from "./expandCardToPage";
+import { deckTransitionActive } from "./deckTransition";
 
 // Entrance-only page transition: nothing delays the click -- the router
 // navigates immediately -- and the new page glides in (fade + short rise)
@@ -7,11 +8,12 @@ import { blogTransitionPending } from "./expandCardToPage";
 // <main> (globals.css, "page-in") so there's no flash before hydration;
 // this covers client-side route changes after that.
 //
-// Blog card expand/zoom-back run their own choreography, so this stands
-// aside for those.
+// Blog card expand/zoom-back and the blueprint deck slide run their own
+// choreography, so this stands aside for those.
 export function playPageEnter() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   if (blogTransitionPending()) return;
+  if (deckTransitionActive()) return; // blueprint slides do their own slide
   const main = document.querySelector<HTMLElement>("body > main, body main");
   if (!main) return;
 
