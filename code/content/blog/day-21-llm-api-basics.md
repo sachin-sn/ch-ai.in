@@ -3,7 +3,7 @@ title: "Day 21 — The API Would Not Let Me Set the Temperature"
 date: "2026-10-12"
 excerpt: "I streamed an answer from the Claude API and timed it six times. The plan was to compare temperature 0 and 1, but the API refused the setting on every model I tried. The first text token came after 1.1 to 1.9 seconds, and every response had a thinking block I never asked for."
 tags: ["30-day-challenge", "day-21", "llm", "claude-api", "streaming", "nodejs"]
-draft: true
+draft: false
 ---
 
 Day 20 was about deciding whether a request should be let in. Day 21 is the first
