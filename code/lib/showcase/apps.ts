@@ -46,6 +46,13 @@ export const showcaseApps: ShowcaseApp[] = [
     repoUrl: "https://github.com/sachin-sn/ch-ai.in",
   },
   {
+    slug: "interview-tools",
+    name: "Interview tools",
+    tagline: "A draw.io whiteboard and a JS/TS code runner -- no backend, the browser does it all.",
+    status: "live",
+    repoUrl: "https://github.com/sachin-sn/ch-ai.in",
+  },
+  {
     slug: "chitragupta",
     name: "Chitragupta",
     tagline: "Public good-deed / bad-deed feedback, without the pitchforks.",

@@ -4,6 +4,7 @@ import ShowcaseTopBar from "@/components/showcase/ShowcaseTopBar";
 import ChAiContent from "@/components/showcase/ChAiContent";
 import ResumeContent from "@/components/showcase/ResumeContent";
 import BlogContent from "@/components/showcase/BlogContent";
+import InterviewToolsContent from "@/components/showcase/InterviewToolsContent";
 import { getLiveShowcaseApps, getShowcaseApp } from "@/lib/showcase/apps";
 
 // output: "export" (see next.config.ts) means every dynamic path has to be
@@ -51,6 +52,8 @@ export default async function ShowcaseAppPage({
         <ResumeContent />
       ) : slug === "blog" ? (
         <BlogContent />
+      ) : slug === "interview-tools" ? (
+        <InterviewToolsContent />
       ) : (
         notFound()
       )}
