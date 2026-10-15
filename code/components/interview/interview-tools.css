@@ -1,0 +1,115 @@
+/* Shared chrome for the interview tools (/whiteboard, /playground).
+   Uses the site's theme tokens so both reskin with the active theme. */
+
+.itool {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 4.5rem);
+  min-height: 560px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+.itool:fullscreen { height: 100dvh; }
+
+.itool-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--color-surface-line);
+  background: var(--color-surface-panel);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+.itool-group { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.itool-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-right: 0.25rem;
+}
+.itool-btn, .itool-select {
+  border: 1px solid var(--color-surface-line);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-radius: 6px;
+  padding: 0.3rem 0.65rem;
+  font: inherit;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.itool-select { max-width: 16rem; cursor: default; }
+.itool-btn:hover { border-color: var(--color-accent); color: var(--color-accent-bright); }
+.itool-btn:focus-visible, .itool-select:focus-visible { outline: 2px solid var(--color-accent-bright); outline-offset: 1px; }
+.itool-btn-primary { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-surface); font-weight: 600; }
+.itool-btn-primary:hover { background: var(--color-accent-bright); color: var(--color-surface); }
+.itool-btn-danger:hover { border-color: #d0544a; color: #e0675d; }
+.itool-saved { color: var(--color-ink-dim); font-size: 0.72rem; }
+.itool-loading { padding: 2rem; color: var(--color-ink-dim); font-family: var(--font-mono); }
+
+.itool-frame-wrap { position: relative; flex: 1; display: flex; min-height: 0; }
+.itool-frame { flex: 1; width: 100%; border: 0; background: #fff; }
+.itool-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;
+  padding: 1.5rem; text-align: center;
+  background: var(--color-surface); color: var(--color-ink-dim);
+}
+.itool-overlay p { max-width: 30rem; margin: 0; }
+.itool-overlay-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--color-ink); }
+
+/* playground */
+.itool-split { flex: 1; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); min-height: 0; }
+.itool-editor { min-height: 0; border-right: 1px solid var(--color-surface-line); }
+.itool-console { display: flex; flex-direction: column; min-height: 0; background: var(--color-surface-panel); }
+.itool-console-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.45rem 0.9rem;
+  border-bottom: 1px solid var(--color-surface-line);
+  font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--color-ink-dim);
+}
+.itool-status { text-transform: none; letter-spacing: 0; }
+.itool-status-running { color: var(--color-accent-bright); }
+.itool-status-done { color: #4fae7b; }
+.itool-status-error, .itool-status-timeout { color: #e0675d; }
+.itool-pkgs { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.5rem 0.9rem; border-bottom: 1px solid var(--color-surface-line); }
+.itool-pkg {
+  font-family: var(--font-mono); font-size: 0.7rem;
+  padding: 0.1rem 0.45rem; border-radius: 999px;
+  border: 1px solid var(--color-surface-line); color: var(--color-ink-dim);
+}
+.itool-pkg::before { content: "● "; }
+.itool-pkg-ready::before { color: #4fae7b; }
+.itool-pkg-loading::before { color: var(--color-accent-bright); }
+.itool-pkg-none::before { color: var(--color-ink-dim); }
+.itool-output {
+  flex: 1; overflow: auto; padding: 0.5rem 0; font-size: 0.8rem;
+  /* A real code font regardless of theme (some themes' --font-mono is a
+     pixel/display face), so console.table and nested objects line up. */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+.itool-empty { padding: 0.5rem 0.9rem; color: var(--color-ink-dim); }
+.itool-empty kbd {
+  font-family: inherit; font-size: 0.72rem; padding: 0 0.3rem;
+  border: 1px solid var(--color-surface-line); border-radius: 4px;
+}
+.itool-line {
+  margin: 0; padding: 0.2rem 0.9rem;
+  white-space: pre-wrap; word-break: break-word;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-surface-line) 50%, transparent);
+  font: inherit;
+}
+.itool-line-warn { color: #d9a63a; background: color-mix(in srgb, #d9a63a 8%, transparent); }
+.itool-line-error { color: #e0675d; background: color-mix(in srgb, #e0675d 8%, transparent); }
+.itool-line-info, .itool-line-debug { color: var(--color-ink-dim); }
+.itool-line-system { color: var(--color-ink-dim); font-style: italic; }
+
+@media (max-width: 860px) {
+  .itool { height: auto; }
+  .itool-split { grid-template-columns: 1fr; grid-template-rows: 60dvh minmax(240px, 40dvh); }
+  .itool-editor { border-right: 0; border-bottom: 1px solid var(--color-surface-line); }
+  .itool-frame-wrap { min-height: 75dvh; }
+}

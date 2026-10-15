@@ -6,6 +6,8 @@ const links = [
   { href: "/blog", label: "writing" },
   { href: "/blueprints", label: "blueprints" },
   { href: "/resume", label: "resume" },
+  { href: "/whiteboard", label: "whiteboard" },
+  { href: "/playground", label: "playground" },
 ];
 
 // Nav stays a plain server component: the only interactive piece is the
