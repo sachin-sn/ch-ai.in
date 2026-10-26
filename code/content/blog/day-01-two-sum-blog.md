@@ -1,8 +1,8 @@
 ---
 title: "DSA Day 1: Two Sum, and what 5 billion operations look like next to 100 thousand"
-date: 2026-10-26
-description: "Two Sum with a brute force and a hash map, with operation counts measured at 1,000, 10,000 and 100,000 numbers."
-tags: [dsa, typescript, hash-map, two-sum]
+date: "2026-10-26"
+excerpt: "Two Sum with a brute force and a hash map, with operation counts measured at 1,000, 10,000 and 100,000 numbers."
+tags: ["dsa", "typescript", "hash-map", "two-sum"]
 draft: false
 ---
 
