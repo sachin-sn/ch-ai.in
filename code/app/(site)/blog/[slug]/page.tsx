@@ -5,6 +5,7 @@ import { getAllSlugs, getPostBySlug } from "@/lib/blog/posts";
 import LinkedInShareButton from "@/components/LinkedInShareButton";
 import BackToWritingLink from "@/components/blog/BackToWritingLink";
 import PostReturnMarker from "@/components/blog/PostReturnMarker";
+import MermaidDiagrams from "@/components/blueprints/MermaidDiagrams";
 
 const SITE_URL = "https://ch-ai.in";
 
@@ -53,6 +54,10 @@ export default async function BlogPostPage({
   if (!post) notFound();
 
   const url = `${SITE_URL}/blog/${post.slug}`;
+  const bodyId = `post-body-${post.slug}`;
+  // ```mermaid blocks in a post are drawn (and animated) in the browser;
+  // posts without any never download Mermaid.
+  const hasDiagrams = post.html.includes("language-mermaid");
 
   return (
     <article className="mx-auto max-w-3xl px-6 py-16">
@@ -86,9 +91,11 @@ export default async function BlogPostPage({
           is the site's own trusted content, not user input, so rendering
           it directly is the same trust model as the rest of the site. */}
       <div
+        id={bodyId}
         className="blog-prose mt-10"
         dangerouslySetInnerHTML={{ __html: post.html }}
       />
+      {hasDiagrams && <MermaidDiagrams containerId={bodyId} animate />}
     </article>
   );
 }

@@ -62,14 +62,40 @@ return null;
 
 My first version returned `[index, seen.get(balance)]`, the wrong way round, and the tests caught it right away.
 
-![Flow of the brute force and the hash map solution side by side](flow.svg)
+```mermaid
+flowchart TB
+  subgraph brute["Brute force: O(n²)"]
+    direction TB
+    b1["pick nums[i]"] --> b2["scan every later nums[j]"]
+    b2 --> b3{"nums[i] + nums[j] = target?"}
+    b3 -- "no, next j" --> b2
+    b3 -- "yes" --> b4["return [i, j]"]
+  end
+  subgraph fast["Hash map: O(n)"]
+    direction TB
+    f1["read nums[i]"] --> f2{"target - nums[i] in seen?"}
+    f2 -- "no" --> f3["seen[nums[i]] = i"]
+    f3 --> f1
+    f2 -- "yes" --> f4["return [seen[target - nums[i]], i]"]
+  end
+```
 
 The inner loop is gone. For each number I do one lookup of `target - nums[index]`, and the price is the map, which
 can hold up to n entries.
 
 ## Trace: `[2, 7, 11, 15]`, target 9
 
-![Trace of the hash map solution on the first example](trace.svg)
+```mermaid
+sequenceDiagram
+  participant A as nums = [2, 7, 11, 15], target = 9
+  participant M as seen (hash map)
+  A->>M: i=0, value 2: is 9 - 2 = 7 in seen?
+  M-->>A: no
+  A->>M: store 2 at index 0
+  A->>M: i=1, value 7: is 9 - 7 = 2 in seen?
+  M-->>A: yes, at index 0
+  Note over A,M: answer [0, 1] after 2 lookups, no inner loop
+```
 
 At `2` the map is empty, so I store `2 → 0`. At `7` I look up `9 - 7 = 2`, find it at index 0, and return `[0, 1]`
 after two lookups.

@@ -748,6 +748,7 @@ html.theme-transition::view-transition-new(root) {
 
 /* Mermaid diagrams (components/blueprints/MermaidDiagrams.tsx). */
 .blueprint-diagram {
+  position: relative;
   margin: 1.75em 0;
   padding: 1.25rem;
   border: 1px solid var(--color-surface-line);
@@ -790,6 +791,27 @@ html.theme-transition::view-transition-new(root) {
   padding: 0;
   border: none;
   background: none;
+}
+
+/* Replay button on animated diagrams (blog posts). */
+.diagram-replay {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--color-surface-line);
+  border-radius: 9999px;
+  background: var(--color-surface);
+  color: var(--color-ink-dim);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.diagram-replay:hover,
+.diagram-replay:focus-visible {
+  color: var(--color-accent-bright);
+  border-color: var(--color-accent-bright);
 }
 
 /* Index: "start" button and the design cards. */
