@@ -1212,3 +1212,12 @@ html.deck-transition.deck-back::view-transition-new(root) {
     transform: translateX(-100%);
   }
 }
+
+.blog-prose video {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  margin-inline: auto;
+  border-radius: 8px;
+}
