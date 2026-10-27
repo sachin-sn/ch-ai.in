@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createMermaidPlayer, type MermaidPlayer } from "@/lib/motion/animateMermaid";
 
 // Turns every ```mermaid code block inside its container into a drawn
 // diagram. Markdown -> HTML happens at build time (lib/blueprints), which
@@ -11,8 +12,13 @@ import { useEffect, useRef } from "react";
 // ever load it. Diagram colours come from the active theme's semantic
 // tokens, and the diagrams are redrawn whenever the theme or light/dark
 // mode changes (both live as attributes on <html>).
+//
+// Used by the blueprints and by blog posts. With `animate`, each diagram
+// plays in once as it scrolls into view (lib/motion/animateMermaid.ts) and
+// gets a Replay button; a theme change redraws it finished, not replaying.
+// prefers-reduced-motion turns the animation (and the button) off.
 
-type Props = { containerId: string };
+type Props = { containerId: string; animate?: boolean };
 
 let mermaidPromise: Promise<typeof import("mermaid").default> | null = null;
 function loadMermaid() {
@@ -103,7 +109,7 @@ function themeVariables() {
 
 let renderCount = 0;
 
-export default function MermaidDiagrams({ containerId }: Props) {
+export default function MermaidDiagrams({ containerId, animate = false }: Props) {
   const generation = useRef(0);
 
   useEffect(() => {
@@ -129,6 +135,50 @@ export default function MermaidDiagrams({ containerId }: Props) {
       });
 
     let cancelled = false;
+
+    // ---- optional animation ------------------------------------------------
+    const motionOk =
+      animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const players = new Map<HTMLElement, MermaidPlayer>();
+    const waiting = new Map<HTMLElement, IntersectionObserver>();
+    const played = new WeakSet<HTMLElement>();
+
+    function enhance(figure: HTMLElement) {
+      players.get(figure)?.stop();
+      waiting.get(figure)?.disconnect();
+      waiting.delete(figure);
+      const player = createMermaidPlayer(figure);
+      if (!player) return; // diagram type we don't animate: leave it as drawn
+      players.set(figure, player);
+
+      const replay = document.createElement("button");
+      replay.type = "button";
+      replay.className = "diagram-replay";
+      replay.textContent = "↻ Replay";
+      replay.setAttribute("aria-label", "Replay the diagram animation");
+      replay.addEventListener("click", () => {
+        player.stop();
+        player.reset();
+        player.play();
+      });
+      figure.appendChild(replay);
+
+      // A redraw after a theme change shows the finished diagram.
+      if (played.has(figure)) return;
+      played.add(figure);
+      player.reset();
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          io.disconnect();
+          waiting.delete(figure);
+          player.play();
+        },
+        { threshold: 0.1 },
+      );
+      waiting.set(figure, io);
+      io.observe(figure);
+    }
 
     async function drawAll() {
       const run = ++generation.current;
@@ -156,6 +206,7 @@ export default function MermaidDiagrams({ containerId }: Props) {
           const natural = el?.viewBox.baseVal?.width;
           if (el && natural) el.style.minWidth = `${Math.min(natural, 560)}px`;
           figure.classList.remove("is-error");
+          if (motionOk) enhance(figure);
         } catch {
           // Leave (or restore) the source as a code block on parse error.
           figure.classList.add("is-error");
@@ -189,8 +240,10 @@ export default function MermaidDiagrams({ containerId }: Props) {
       cancelled = true;
       clearTimeout(timer);
       observer.disconnect();
+      waiting.forEach((io) => io.disconnect());
+      players.forEach((p) => p.stop());
     };
-  }, [containerId]);
+  }, [containerId, animate]);
 
   return null;
 }
