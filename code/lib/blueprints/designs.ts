@@ -22,6 +22,7 @@ const FILE_PATTERN = /^(\d{2})-(.+)\.md$/;
 // is too long. A design without an entry here falls back to its H1 with
 // the leading "Design a/an" trimmed off.
 const SHORT_TITLES: Record<string, string> = {
+  "tech-terminology-glossary": "Terminology Glossary",
   "chat-service-whatsapp": "Real-Time Chat (WhatsApp)",
   "video-streaming-youtube": "Video Streaming (YouTube)",
   "low-latency-distributed-systems": "Low-Latency Systems",

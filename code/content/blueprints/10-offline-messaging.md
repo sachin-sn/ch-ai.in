@@ -4,7 +4,7 @@
 
 A messaging service must work when the network fails. The network can fail at the sender, at the receiver, or between them. The design uses one principle: **store and forward**. Each side keeps the message in durable storage until the next side confirms it. Then no message is lost, and the system delivers it when the network is available again.
 
-This design extends `01-chat-service-whatsapp.md`.
+This design extends `02-chat-service-whatsapp.md`.
 
 ## 2. Failure cases
 

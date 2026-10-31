@@ -188,7 +188,7 @@ This makes API responses faster. It also lets workers use cheap Spot capacity, b
 
 A full active-active multi-region design is not cost-effective at this scale. Use it only if the business needs very high availability (99.99%+) or users are in many continents.
 
-See `11-self-healing-infrastructure.md` and `10-circuit-breaker.md` for more details.
+See `12-self-healing-infrastructure.md` and `11-circuit-breaker.md` for more details.
 
 ## 10. Cost optimization
 

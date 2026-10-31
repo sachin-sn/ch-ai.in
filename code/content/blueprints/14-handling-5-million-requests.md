@@ -26,7 +26,7 @@ In an interview, ask for the time unit. This document uses **5 million requests 
 | Requirement | Peak RPS | Design size |
 |-------------|----------|-------------|
 | 5 million per day | approx. 175 | Small. Autoscaling of a few servers is sufficient. |
-| 5 million per hour | approx. 4,000 | Medium. See `12-scaling-5-million-users.md`. |
+| 5 million per hour | approx. 4,000 | Medium. See `13-scaling-5-million-users.md`. |
 | 5 million per minute | approx. 83,000 to 250,000 | Large. One region, 2 to 3 cells. |
 | 5 million per second | 5,000,000 | Very large. Many regions, many cells. |
 
@@ -310,13 +310,13 @@ flowchart LR
 
 | Control | Function |
 |---------|----------|
-| Rate limiting | Limits each client, user, API key, and IP address. See `06-rate-limiter.md`. |
+| Rate limiting | Limits each client, user, API key, and IP address. See `07-rate-limiter.md`. |
 | Admission control | Accepts a request only if the service has capacity (for example, concurrent requests less than the limit). |
 | Load shedding | Rejects new low-priority requests quickly when the system is full. A fast rejection is better than a slow timeout. |
 | Priority classes | Critical (login, checkout) > Normal (browse) > Low (recommendations, analytics, prefetch). |
 | Bulkheads | Separate thread pools and connection pools for each dependency and priority. One slow part cannot use all resources. |
 | Timeouts | Each call has a time limit. No request waits without limit. |
-| Circuit breakers | Stop calls to a failing dependency. See `10-circuit-breaker.md`. |
+| Circuit breakers | Stop calls to a failing dependency. See `11-circuit-breaker.md`. |
 | Backpressure | When a queue is full, tell producers to slow down. |
 | Retry budget | Retries are limited to approx. 10% of requests. This prevents a "retry storm." |
 | Client jitter and backoff | Clients wait a random time before a retry. This prevents synchronized waves. |
