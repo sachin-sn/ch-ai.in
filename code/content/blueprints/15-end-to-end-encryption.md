@@ -10,7 +10,7 @@ WhatsApp uses the **Signal Protocol**. This protocol has three main parts:
 2. **Double Ratchet**: each message gets a new encryption key.
 3. **Sender Keys**: group messages are encrypted efficiently.
 
-This document extends `01-chat-service-whatsapp.md`.
+This document extends `02-chat-service-whatsapp.md`.
 
 ## 2. Transport encryption vs end-to-end encryption
 

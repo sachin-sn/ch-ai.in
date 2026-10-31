@@ -16,25 +16,26 @@ The text uses ASD-STE100 Simplified Technical English rules:
 
 | No. | File | Topic |
 |-----|------|-------|
-| 1 | `01-chat-service-whatsapp.md` | Real-time chat service with low delivery latency |
-| 2 | `02-video-streaming-youtube.md` | Video upload, processing, and streaming platform |
-| 3 | `03-low-latency-distributed-systems.md` | Design methods for low-latency distributed systems |
-| 4 | `04-ordered-message-queues.md` | Message order and correct processing in queues |
-| 5 | `05-url-shortener.md` | URL shortener service |
-| 6 | `06-rate-limiter.md` | Distributed rate limiter |
-| 7 | `07-notification-system.md` | Multi-channel notification system |
-| 8 | `08-news-feed.md` | Social media news feed |
-| 9 | `09-offline-messaging.md` | Message delivery during network failure (offline-first, store and forward) |
-| 10 | `10-circuit-breaker.md` | Circuit breaker pattern and related resilience patterns |
-| 11 | `11-self-healing-infrastructure.md` | Self-healing (auto-healing) infrastructure |
-| 12 | `12-scaling-5-million-users.md` | Scalable and cost-effective architecture for 5 million users |
-| 13 | `13-handling-5-million-requests.md` | Elastic system that scales up and down to 5 million requests without breaking |
-| 14 | `14-end-to-end-encryption.md` | End-to-end encryption (Signal Protocol, as used by WhatsApp) |
-| 15 | `15-realtime-react-dashboard.md` | Large real-time dashboard in React that stays stable under constant updates |
-| 16 | `16-data-transfer-fast-to-slow-server.md` | Transfer a large file from a fast server to a slow server |
-| 17 | `17-ride-hailing-uber.md` | Ride-hailing service (Uber, Ola) |
-| 18 | `18-ticket-booking-bookmyshow.md` | Ticket booking system (BookMyShow) |
-| 19 | `19-unique-id-generator.md` | Distributed unique ID generator (Snowflake) |
+| 1 | `01-tech-terminology-glossary.md` | Interview terminology glossary: definitions and examples for 27 topics, with an index |
+| 2 | `02-chat-service-whatsapp.md` | Real-time chat service with low delivery latency |
+| 3 | `03-video-streaming-youtube.md` | Video upload, processing, and streaming platform |
+| 4 | `04-low-latency-distributed-systems.md` | Design methods for low-latency distributed systems |
+| 5 | `05-ordered-message-queues.md` | Message order and correct processing in queues |
+| 6 | `06-url-shortener.md` | URL shortener service |
+| 7 | `07-rate-limiter.md` | Distributed rate limiter |
+| 8 | `08-notification-system.md` | Multi-channel notification system |
+| 9 | `09-news-feed.md` | Social media news feed |
+| 10 | `10-offline-messaging.md` | Message delivery during network failure (offline-first, store and forward) |
+| 11 | `11-circuit-breaker.md` | Circuit breaker pattern and related resilience patterns |
+| 12 | `12-self-healing-infrastructure.md` | Self-healing (auto-healing) infrastructure |
+| 13 | `13-scaling-5-million-users.md` | Scalable and cost-effective architecture for 5 million users |
+| 14 | `14-handling-5-million-requests.md` | Elastic system that scales up and down to 5 million requests without breaking |
+| 15 | `15-end-to-end-encryption.md` | End-to-end encryption (Signal Protocol, as used by WhatsApp) |
+| 16 | `16-realtime-react-dashboard.md` | Large real-time dashboard in React that stays stable under constant updates |
+| 17 | `17-data-transfer-fast-to-slow-server.md` | Transfer a large file from a fast server to a slow server |
+| 18 | `18-ride-hailing-uber.md` | Ride-hailing service (Uber, Ola) |
+| 19 | `19-ticket-booking-bookmyshow.md` | Ticket booking system (BookMyShow) |
+| 20 | `20-unique-id-generator.md` | Distributed unique ID generator (Snowflake) |
 
 ## Other frequently asked questions
 

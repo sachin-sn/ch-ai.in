@@ -280,7 +280,7 @@ The infrastructure can heal only applications that support it.
 - **Fast startup.** A new instance must be ready in seconds.
 - **Graceful shutdown.** Handle `SIGTERM`. Finish current requests. Then stop.
 - **Idempotent operations.** A retry after a failure must not cause a duplicate result.
-- **Resilience patterns.** Use timeouts, retries, and circuit breakers (see `10-circuit-breaker.md`).
+- **Resilience patterns.** Use timeouts, retries, and circuit breakers (see `11-circuit-breaker.md`).
 - **Immutable infrastructure.** Replace a broken server. Do not repair it manually.
 
 ## 13. Verify with chaos engineering
