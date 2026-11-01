@@ -12,6 +12,11 @@ const FIRESTORE_COLLECTION = process.env.FIRESTORE_COLLECTION ?? "visits";
 const SITE_KEY = "site";
 const PAGE_KEY_RE = /^blog-[a-z0-9-]{1,100}$/;
 
+// Download counters live beside the visit counters, as `download-<name>`
+// docs. They are separate on purpose: a download must not bump the
+// whole-site visit total. Same character rules as above.
+const DOWNLOAD_KEY_RE = /^download-[a-z0-9-]{1,100}$/;
+
 // Crawlers that execute JS (Googlebot, Lighthouse, headless Chrome) would
 // otherwise POST on every render. They still get the count back -- they
 // just don't bump it. Not a security control (the UA is caller-supplied),
@@ -44,6 +49,35 @@ functions.http("visit", async (req: functions.Request, res: functions.Response) 
   if (req.method !== "GET" && req.method !== "POST") {
     res.set("cache-control", "no-store");
     res.status(405).json({ error: "method not allowed" });
+    return;
+  }
+
+  // Download counter: a separate path through the handler that touches
+  // only `download-<name>` -- never the site total.
+  const rawDownload = req.method === "POST" ? req.body?.download : req.query.download;
+  if (typeof rawDownload === "string") {
+    const key = `download-${rawDownload}`;
+    if (!DOWNLOAD_KEY_RE.test(key)) {
+      res.set("cache-control", "no-store");
+      res.status(400).json({ error: "invalid download name" });
+      return;
+    }
+    try {
+      if (req.method === "POST") {
+        res.set("cache-control", "no-store");
+        const origin = req.get("origin");
+        const userAgent = req.get("user-agent") ?? "";
+        const countable = (!origin || ALLOWED_ORIGINS.has(origin)) && !BOT_UA_RE.test(userAgent);
+        if (countable) await increment(key);
+      } else {
+        res.set("cache-control", "public, max-age=60, s-maxage=60");
+      }
+      res.status(200).json({ downloads: await readCount(key) });
+    } catch (err) {
+      console.error("download counter failed", err);
+      res.set("cache-control", "no-store");
+      res.status(502).json({ error: "counter unavailable" });
+    }
     return;
   }
 
