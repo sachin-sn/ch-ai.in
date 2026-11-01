@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
      switched off here. */
   devIndicators: false,
 
+  // The repo root has its own package.json and lockfile (for husky), so
+  // Turbopack guesses the repo root as the workspace root instead of this
+  // folder. From there it cannot resolve its own internal modules, which
+  // shows up as "Can't resolve @vercel/turbopack-next/internal/font/google/font"
+  // for the next/font/google imports. Pin the root to this folder.
+  turbopack: {
+    root: __dirname,
+  },
+
   // Static export: the site is built to plain HTML/CSS/JS in ./out and
   // served from S3 + CloudFront (see ../infra) — there's no Node server
   // behind it in production, so no API routes / middleware / SSR here.
