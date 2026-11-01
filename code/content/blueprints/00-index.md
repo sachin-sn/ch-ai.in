@@ -16,7 +16,7 @@ The text uses ASD-STE100 Simplified Technical English rules:
 
 | No. | File | Topic |
 |-----|------|-------|
-| 1 | `01-tech-terminology-glossary.md` | Interview terminology glossary: definitions and examples for 27 topics, with an index |
+| 1 | `01-tech-terminology-glossary.md` | Interview terminology glossary: definitions and examples for 47 topics, with an index |
 | 2 | `02-chat-service-whatsapp.md` | Real-time chat service with low delivery latency |
 | 3 | `03-video-streaming-youtube.md` | Video upload, processing, and streaming platform |
 | 4 | `04-low-latency-distributed-systems.md` | Design methods for low-latency distributed systems |
