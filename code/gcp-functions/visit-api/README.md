@@ -15,6 +15,16 @@ The client POSTs once per browser session (a `sessionStorage` flag), and
 GETs on every other page load, so refreshes and in-site navigation don't
 inflate the count.
 
+Download counters use a separate parameter so they never change the site total:
+
+| Method | Body / query                 | Effect                                | Response           |
+| ------ | ---------------------------- | ------------------------------------- | ------------------ |
+| `POST` | `{ "download": "glossary" }` | Increments `visits/download-glossary` | `{ downloads }`    |
+| `GET`  | `?download=glossary`         | Read only (edge-cached 60s)           | `{ downloads }`    |
+
+`download` must match `[a-z0-9-]{1,100}` (stored as `download-<name>`). The
+same bot and `Origin` filters apply.
+
 `page` must match `^blog-[a-z0-9-]{1,100}$` — reserved for per-post read
 counts later; anything else is ignored.
 

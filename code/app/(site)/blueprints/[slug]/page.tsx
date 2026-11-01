@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getAllBlueprints, getBlueprintBySlug, getDeck } from "@/lib/blueprints/designs";
 import { DeckArrows, DeckBar, DeckPager, DeckProgress } from "@/components/blueprints/DeckNav";
 import MermaidDiagrams from "@/components/blueprints/MermaidDiagrams";
+import GlossaryDownload from "@/components/blueprints/GlossaryDownload";
 
 // output: "export" -- one static page per design, known at build time.
 export function generateStaticParams() {
@@ -60,6 +61,8 @@ export default async function BlueprintPage({
         </p>
         <h1 className="mt-2 font-display text-4xl font-bold text-ink">{design.title}</h1>
         {design.topic && <p className="mt-3 text-lg text-ink-dim">{design.topic}</p>}
+
+        {slug === "tech-terminology-glossary" && <GlossaryDownload />}
 
         {/* Built from the repo's own Markdown at build time (lib/blueprints). */}
         <div
